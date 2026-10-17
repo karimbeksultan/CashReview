@@ -4,6 +4,8 @@ import {
   parseUiJob,
   parseHumanReview,
   InvalidResultError,
+  reviewValidationStatus,
+  limitReviewNotes,
 } from "../src/contracts.ts";
 
 const id = "test-job";
@@ -123,6 +125,59 @@ test("server review limit counts Unicode codepoints rather than UTF-16 units", (
   );
   assert.throws(
     () => parseHumanReview({ ...review, notes: review.notes + "a" }, "invalid"),
+    InvalidResultError,
+  );
+});
+
+test("upload quality notice uses the current service's reported status", () => {
+  assert.equal(
+    reviewValidationStatus(null, { validation_status: "failed_baseline" }),
+    "failed_baseline",
+  );
+  assert.equal(reviewValidationStatus(null, null), undefined);
+  assert.equal(
+    reviewValidationStatus(null, { validation_status: "validated" }),
+    "validated",
+  );
+});
+
+test("historical job quality never inherits a replacement service's status", () => {
+  for (const serviceStatus of ["validated", "failed_baseline"]) {
+    const runtime = { validation_status: serviceStatus };
+    for (const status of ["failed_baseline", "validated", "selection_only"]) {
+      const historical = {
+        ...negative,
+        metadata: { validation_status: status },
+      };
+      assert.equal(reviewValidationStatus(historical, runtime), status);
+    }
+    assert.equal(reviewValidationStatus(negative, runtime), undefined);
+    assert.equal(
+      reviewValidationStatus(
+        { ...negative, metadata: { validation_status: null } },
+        runtime,
+      ),
+      undefined,
+    );
+  }
+});
+
+test("mixed Unicode editor input and over-limit paste produce a valid server receipt", () => {
+  const boundary = "a".repeat(3999) + "😀";
+  const pasted = boundary + "extra😀";
+  const review = {
+    decision: "needs_review",
+    notes: limitReviewNotes(pasted),
+    event_index: null,
+    updated_at: 12345,
+  };
+  assert.equal(limitReviewNotes(boundary), boundary);
+  assert.equal(review.notes, boundary);
+  assert.equal(Array.from(review.notes).length, 4000);
+  assert.equal(review.notes.length, 4001);
+  assert.deepEqual(parseHumanReview(review, "invalid"), review);
+  assert.throws(
+    () => parseHumanReview({ ...review, notes: pasted }, "invalid"),
     InvalidResultError,
   );
 });

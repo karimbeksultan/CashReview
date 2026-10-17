@@ -16,6 +16,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import type { Copy } from "./copy";
+import { limitReviewNotes } from "./contracts";
 import type {
   Finding,
   FrameSelection,
@@ -112,6 +113,7 @@ export function HumanDecisionPanel({
 }) {
   const { decision, notes, scope, saved } = draft;
   const [error, setError] = useState("");
+  const composingNotes = useRef(false);
   const updateDraft = (change: Partial<ReviewDraft>) => {
     onDraftChange({ ...draft, ...change, saved: false });
     setError("");
@@ -125,7 +127,7 @@ export function HumanDecisionPanel({
     try {
       await onSave({
         decision,
-        notes,
+        notes: limitReviewNotes(notes),
         event_index: scope === "all" ? null : Number(scope),
       });
     } catch (e) {
@@ -193,15 +195,25 @@ export function HumanDecisionPanel({
         id="review-notes"
         value={notes}
         disabled={saving}
-        maxLength={4000}
         rows={5}
         placeholder={t.notesHint}
+        onCompositionStart={() => {
+          composingNotes.current = true;
+        }}
+        onCompositionEnd={(e) => {
+          composingNotes.current = false;
+          updateDraft({ notes: limitReviewNotes(e.currentTarget.value) });
+        }}
         onChange={(e) => {
-          updateDraft({ notes: e.target.value });
+          updateDraft({
+            notes: composingNotes.current
+              ? e.target.value
+              : limitReviewNotes(e.target.value),
+          });
         }}
       />
       <span className="character-count">
-        {notes.length.toLocaleString()} / 4,000
+        {Array.from(notes).length.toLocaleString()} / 4,000
       </span>
       {error && (
         <p className="field-error" role="alert">

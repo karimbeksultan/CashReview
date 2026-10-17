@@ -1486,6 +1486,29 @@ input[type="range"] {
 .system-card > p {
   color: var(--muted);
 }
+.quality-failure-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #bf7b2f;
+  border-left: 5px solid #975117;
+  border-radius: 8px;
+  background: #fff7ea;
+  color: #754218;
+}
+.quality-failure-notice h2 {
+  margin-bottom: 6px;
+  font-size: 18px;
+  line-height: 1.4;
+}
+.quality-failure-notice p {
+  font-size: 15px;
+}
+.quality-failure-notice svg {
+  margin-top: 2px;
+}
 .experimental-notice {
   display: flex;
   gap: 10px;

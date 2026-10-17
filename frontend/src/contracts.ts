@@ -1,10 +1,25 @@
-import type { Finding, HumanReview, Job } from "./types";
+import type { Finding, Health, HumanReview, Job } from "./types";
 
 export class InvalidResultError extends Error {}
 const record = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
 const timestamp = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0;
+
+export function reviewValidationStatus(
+  job: Job | null,
+  runtime: Health | null | undefined,
+): string | undefined {
+  // A saved result belongs to its recorded model, even if the service changed.
+  const status = job
+    ? job.metadata?.validation_status
+    : runtime?.validation_status;
+  return typeof status === "string" ? status : undefined;
+}
+
+export function limitReviewNotes(value: string): string {
+  return Array.from(value).slice(0, 4000).join("");
+}
 
 export function parseUiJob(
   value: unknown,

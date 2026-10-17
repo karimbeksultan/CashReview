@@ -15,7 +15,7 @@ export const copy = {
     sources: "Sources",
     system: "System & API",
     local: "Local processing",
-    ready: "Analysis available",
+    ready: "Service available",
     unready: "Service not ready",
     checking: "Checking service",
     language: "Change language",
@@ -44,6 +44,9 @@ export const copy = {
     noConcern: "No supported concern found",
     model: "Model result",
     experimental: "Experimental",
+    failedQualityTitle: "Automatic detection failed the initial accuracy check",
+    failedQualityText:
+      "The initial check flagged all 4 normal test clips as concerns. Inspect the source video and record your own human decision.",
     predictionNote:
       "Inspect the evidence and record your own decision. The model result is a starting point.",
     negativeNote:
@@ -178,7 +181,7 @@ export const copy = {
     sources: "Источники",
     system: "Система и API",
     local: "Локальная обработка",
-    ready: "Анализ доступен",
+    ready: "Сервис доступен",
     unready: "Сервис не готов",
     checking: "Проверка сервиса",
     language: "Сменить язык",
@@ -206,6 +209,10 @@ export const copy = {
     noConcern: "Нарушение не обнаружено",
     model: "Результат модели",
     experimental: "Экспериментальная модель",
+    failedQualityTitle:
+      "Автоматическое распознавание не прошло проверку точности",
+    failedQualityText:
+      "При первичной проверке модель ошибочно отметила все 4 нормальных тестовых видео. Просмотрите исходное видео и сохраните собственное решение проверяющего.",
     predictionNote:
       "Изучите доказательства и запишите своё решение. Прогноз модели — отправная точка.",
     negativeNote:

@@ -28,7 +28,12 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { copy } from "./copy";
-import { InvalidResultError, parseHumanReview, parseUiJob } from "./contracts";
+import {
+  InvalidResultError,
+  parseHumanReview,
+  parseUiJob,
+  reviewValidationStatus,
+} from "./contracts";
 import {
   EvidenceDialog,
   fmtTime,
@@ -164,10 +169,12 @@ export default function App() {
   const rule = rules.find((value) => value.id === active?.rule_id);
   const isResult = demo || job?.status === "done";
   const inProgress = busy || (job?.status === "processing" && !retrievalError);
-  const experimental =
-    demo ||
-    (job?.metadata?.validation_status ?? runtime?.validation_status) !==
-      "validated";
+  const reviewValidation = reviewValidationStatus(job, runtime);
+  const experimental = demo || reviewValidation !== "validated";
+  const failedBaseline = !demo && reviewValidation === "failed_baseline";
+  const runtimeExperimental = runtime?.validation_status !== "validated";
+  const runtimeFailedBaseline =
+    runtime?.validation_status === "failed_baseline";
   const refreshHealth = useCallback(async () => {
     setChecking(true);
     try {
@@ -536,11 +543,7 @@ export default function App() {
           value <= 1,
       )
     : [];
-  const warnings = Array.isArray(job?.metadata?.warnings)
-    ? job.metadata.warnings.filter(
-        (value): value is string => typeof value === "string",
-      )
-    : runtime?.limitations || [];
+  const warnings = runtime?.limitations || [];
   return (
     <div className="app">
       <a className="skip-link" href="#main">
@@ -632,6 +635,18 @@ export default function App() {
                 </button>
               )}
             </div>
+            {failedBaseline && (
+              <section
+                className="quality-failure-notice"
+                aria-label={t.failedQualityTitle}
+              >
+                <WarningCircle size={26} weight="bold" aria-hidden="true" />
+                <div>
+                  <h2>{t.failedQualityTitle}</h2>
+                  <p>{t.failedQualityText}</p>
+                </div>
+              </section>
+            )}
             {demo && (
               <div className="preview-banner">
                 <Eye size={22} />
@@ -1275,10 +1290,14 @@ export default function App() {
                     </dd>
                   </div>
                 </dl>
-                {experimental && (
+                {runtimeExperimental && (
                   <div className="experimental-notice">
                     <Info size={20} />
-                    <p>{t.modelWarning}</p>
+                    <p>
+                      {runtimeFailedBaseline
+                        ? t.failedQualityText
+                        : t.modelWarning}
+                    </p>
                   </div>
                 )}
                 {health?.reasons?.length ? (
