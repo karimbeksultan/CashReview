@@ -1,0 +1,239 @@
+{
+  "study": "DINOv2-small two-tile local-memory/prototype comparison",
+  "publication_status": "published_aggregate_rejected_study",
+  "training_groups": 24,
+  "positive_training_groups": 13,
+  "normal_training_groups": 11,
+  "folds": 4,
+  "declared_configurations": 12,
+  "selection_groups_evaluated": 0,
+  "test_groups_evaluated": 0,
+  "quality_validated": false,
+  "serving_changed": false,
+  "scope": "Training-only exploratory OOF candidate selection; not independent accuracy",
+  "private_source_or_prediction_records_included": false,
+  "method_references": [
+    {
+      "title": "Scikit-learn: grouped cross-validation",
+      "url": "https://scikit-learn.org/stable/modules/cross_validation.html",
+      "context": "Separate independent groups and retain a final evaluation set."
+    },
+    {
+      "title": "Scikit-learn: threshold selection",
+      "url": "https://scikit-learn.org/stable/modules/classification_threshold.html",
+      "context": "Choose an operating point from held-out training scores, without tuning on evaluation outcomes."
+    },
+    {
+      "title": "Scientific Agent Skills: A Library of Procedural Knowledge for Research Agents",
+      "url": "https://doi.org/10.48550/arXiv.2609.00065",
+      "authors": "Timothy Kassis, Vinayak Agarwal, Yuhuan He, Darshil Patel, Aubrey M. Brueckner",
+      "year": 2026,
+      "context": "Supplementary scikit-learn workflow guidance; latest arXiv record checked 17 October 2026 (v2)."
+    },
+    {
+      "title": "DINOv2 primary paper",
+      "url": "https://arxiv.org/abs/2304.07193",
+      "context": "Source of the frozen visual representation, not a task-specific quality claim."
+    },
+    {
+      "title": "Official base DINOv2 repository and licence",
+      "url": "https://github.com/facebookresearch/dinov2",
+      "context": "Base code and weights; distinct XRay/Cell terms do not apply to the selected base checkpoint."
+    },
+    {
+      "title": "Pinned official DINOv2-small assets",
+      "url": "https://huggingface.co/facebook/dinov2-small/tree/ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "context": "Public asset provenance. The fixed two-tile transform differs from the published processor crop."
+    },
+    {
+      "title": "Towards Total Recall in Industrial Anomaly Detection (PatchCore)",
+      "url": "https://arxiv.org/abs/2106.08265",
+      "context": "Normal patch-memory method inspiration only; this study is not a faithful PatchCore implementation or industrial-benchmark reproduction."
+    }
+  ],
+  "outcome_available": true,
+  "status": "rejected_train_gate",
+  "selected_index": 4,
+  "selected": {
+    "configuration": {
+      "view": "patch",
+      "scorer": "normal_novelty",
+      "aggregation": "quantile90"
+    },
+    "oof_roc_auc": 0.5174825174825175,
+    "oof_standardized_partial_auc_fpr25": 0.5524475524475525,
+    "threshold": null,
+    "operating_point": null,
+    "training_gate_passed": false
+  },
+  "candidates": [
+    {
+      "configuration": {
+        "view": "global",
+        "scorer": "normal_novelty",
+        "aggregation": "quantile90"
+      },
+      "oof_roc_auc": 0.5034965034965035,
+      "oof_standardized_partial_auc_fpr25": 0.5044955044955045,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "global",
+        "scorer": "normal_novelty",
+        "aggregation": "adjacent2_mean_maximum"
+      },
+      "oof_roc_auc": 0.49650349650349657,
+      "oof_standardized_partial_auc_fpr25": 0.5204795204795205,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "global",
+        "scorer": "positive_normal_margin",
+        "aggregation": "quantile90"
+      },
+      "oof_roc_auc": 0.4755244755244755,
+      "oof_standardized_partial_auc_fpr25": 0.4645354645354645,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "global",
+        "scorer": "positive_normal_margin",
+        "aggregation": "adjacent2_mean_maximum"
+      },
+      "oof_roc_auc": 0.4755244755244755,
+      "oof_standardized_partial_auc_fpr25": 0.45254745254745254,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "patch",
+        "scorer": "normal_novelty",
+        "aggregation": "quantile90"
+      },
+      "oof_roc_auc": 0.5174825174825175,
+      "oof_standardized_partial_auc_fpr25": 0.5524475524475525,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "patch",
+        "scorer": "normal_novelty",
+        "aggregation": "adjacent2_mean_maximum"
+      },
+      "oof_roc_auc": 0.5104895104895105,
+      "oof_standardized_partial_auc_fpr25": 0.5404595404595405,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "patch",
+        "scorer": "positive_normal_margin",
+        "aggregation": "quantile90"
+      },
+      "oof_roc_auc": 0.44755244755244755,
+      "oof_standardized_partial_auc_fpr25": 0.5404595404595405,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "patch",
+        "scorer": "positive_normal_margin",
+        "aggregation": "adjacent2_mean_maximum"
+      },
+      "oof_roc_auc": 0.44755244755244755,
+      "oof_standardized_partial_auc_fpr25": 0.5404595404595405,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "centered_patch",
+        "scorer": "normal_novelty",
+        "aggregation": "quantile90"
+      },
+      "oof_roc_auc": 0.41958041958041964,
+      "oof_standardized_partial_auc_fpr25": 0.45254745254745254,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "centered_patch",
+        "scorer": "normal_novelty",
+        "aggregation": "adjacent2_mean_maximum"
+      },
+      "oof_roc_auc": 0.39160839160839167,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "centered_patch",
+        "scorer": "positive_normal_margin",
+        "aggregation": "quantile90"
+      },
+      "oof_roc_auc": 0.37762237762237766,
+      "oof_standardized_partial_auc_fpr25": 0.45654345654345657,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "centered_patch",
+        "scorer": "positive_normal_margin",
+        "aggregation": "adjacent2_mean_maximum"
+      },
+      "oof_roc_auc": 0.34965034965034963,
+      "oof_standardized_partial_auc_fpr25": 0.4725274725274725,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    }
+  ],
+  "generic_policy_sha256": "068f365167a7c20a8ec002ea8b7c7a23cffb525cb433bcde1ed49ee2a73a06d3",
+  "public_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+  "public_model_weights_sha256": "ae1e99fcefd534ed978cdeb8326f08030c96e28b7a81ffcbc98a857c84d14be1",
+  "method": "Two fixed full-width60% upper/lower RGB crops, each bilinear224 with ImageNet normalization, every2seconds. Frozen CLS/patch features; optional per-clip temporal-median centering. Fold-only normal16row/positive8row memory; positive rows within2.001seconds of sparse anchors. Same-cell nearest cosine, top4cells, q90 or adjacent-two mean maximum. Zero-query minimum signal is novelty0/margin−2.",
+  "training_gate_rule": "Selected ROC-AUC>.6, standardized partialAUC>.5 and a threshold satisfying specificity≥.8, recall≥.5, BA≥.65; rank partialAUC, ROC-AUC, declaration order",
+  "extraction": {
+    "completed_groups": 24,
+    "failed_groups": 0,
+    "total_sampled_frames": 375,
+    "encoder_calls": 750,
+    "total_recorded_clip_seconds": 424.57959240002674,
+    "clip_seconds_min": 3.8744576000026427,
+    "clip_seconds_median": 8.961142600004678,
+    "clip_seconds_max": 91.75820250000106,
+    "scope": "Local research feature extraction after model loading; excludes cold initialization, service upload/queue/evidence/network"
+  },
+  "synthetic_probe": {
+    "synthetic_frames": 12,
+    "encoder_calls": 24,
+    "case_inputs": 0,
+    "cold_import_and_model_load_seconds": 65.01442209997913,
+    "estimated74_frames_seconds": 42.26210670007276,
+    "scope": "Synthetic median-call extrapolation, not measured full-service latency"
+  }
+}

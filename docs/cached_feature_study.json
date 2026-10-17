@@ -1,0 +1,192 @@
+{
+  "study": "Cached frozen-feature normal-memory/prototype comparison",
+  "publication_status": "published_aggregate_rejected_study",
+  "training_groups": 24,
+  "positive_training_groups": 13,
+  "normal_training_groups": 11,
+  "folds": 4,
+  "declared_configurations": 12,
+  "selection_groups_evaluated": 0,
+  "test_groups_evaluated": 0,
+  "quality_validated": false,
+  "serving_changed": false,
+  "scope": "Training-only exploratory OOF candidate selection; not independent accuracy",
+  "private_source_or_prediction_records_included": false,
+  "method_references": [
+    {
+      "title": "Scikit-learn: grouped cross-validation",
+      "url": "https://scikit-learn.org/stable/modules/cross_validation.html",
+      "context": "Separate independent groups and retain a final evaluation set."
+    },
+    {
+      "title": "Scikit-learn: threshold selection",
+      "url": "https://scikit-learn.org/stable/modules/classification_threshold.html",
+      "context": "Choose an operating point from held-out training scores, without tuning on evaluation outcomes."
+    },
+    {
+      "title": "Scientific Agent Skills: A Library of Procedural Knowledge for Research Agents",
+      "url": "https://doi.org/10.48550/arXiv.2609.00065",
+      "authors": "Timothy Kassis, Vinayak Agarwal, Yuhuan He, Darshil Patel, Aubrey M. Brueckner",
+      "year": 2026,
+      "context": "Supplementary scikit-learn workflow guidance; latest arXiv record checked 17 October 2026 (v2)."
+    },
+    {
+      "title": "Towards Total Recall in Industrial Anomaly Detection (PatchCore)",
+      "url": "https://arxiv.org/abs/2106.08265",
+      "context": "Normal patch-memory method inspiration only; this study is not a faithful PatchCore implementation or industrial-benchmark reproduction."
+    }
+  ],
+  "status": "rejected_train_gate",
+  "outcome_available": true,
+  "selected_index": 0,
+  "selected": {
+    "configuration": {
+      "representation": "siglip",
+      "method": "normal_memory_k3",
+      "pool": "mean_top3"
+    },
+    "oof_roc_auc": 0.46853146853146854,
+    "oof_standardized_partial_auc_fpr25": 0.45654345654345657,
+    "eligible_operating_point": null,
+    "training_gate_passed": false
+  },
+  "candidates": [
+    {
+      "configuration": {
+        "representation": "siglip",
+        "method": "normal_memory_k3",
+        "pool": "mean_top3"
+      },
+      "oof_roc_auc": 0.46853146853146854,
+      "oof_standardized_partial_auc_fpr25": 0.45654345654345657,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "siglip",
+        "method": "normal_memory_k3",
+        "pool": "max_adjacent_min"
+      },
+      "oof_roc_auc": 0.4825174825174825,
+      "oof_standardized_partial_auc_fpr25": 0.4405594405594406,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "siglip",
+        "method": "prototype_ratio_k1",
+        "pool": "mean_top3"
+      },
+      "oof_roc_auc": 0.3286713286713287,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "siglip",
+        "method": "prototype_ratio_k1",
+        "pool": "max_adjacent_min"
+      },
+      "oof_roc_auc": 0.33566433566433573,
+      "oof_standardized_partial_auc_fpr25": 0.4405594405594406,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "siglip",
+        "method": "prototype_ratio_k3",
+        "pool": "mean_top3"
+      },
+      "oof_roc_auc": 0.3076923076923077,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "siglip",
+        "method": "prototype_ratio_k3",
+        "pool": "max_adjacent_min"
+      },
+      "oof_roc_auc": 0.3076923076923077,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "r3d",
+        "method": "normal_memory_k3",
+        "pool": "mean_top3"
+      },
+      "oof_roc_auc": 0.39160839160839167,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "r3d",
+        "method": "normal_memory_k3",
+        "pool": "max_adjacent_min"
+      },
+      "oof_roc_auc": 0.3706293706293707,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "r3d",
+        "method": "prototype_ratio_k1",
+        "pool": "mean_top3"
+      },
+      "oof_roc_auc": 0.36363636363636365,
+      "oof_standardized_partial_auc_fpr25": 0.45654345654345657,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "r3d",
+        "method": "prototype_ratio_k1",
+        "pool": "max_adjacent_min"
+      },
+      "oof_roc_auc": 0.3706293706293706,
+      "oof_standardized_partial_auc_fpr25": 0.45654345654345657,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "r3d",
+        "method": "prototype_ratio_k3",
+        "pool": "mean_top3"
+      },
+      "oof_roc_auc": 0.2517482517482517,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "r3d",
+        "method": "prototype_ratio_k3",
+        "pool": "max_adjacent_min"
+      },
+      "oof_roc_auc": 0.27272727272727276,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "eligible_operating_point": null,
+      "training_gate_passed": false
+    }
+  ],
+  "generic_policy_sha256": "9be349b60ca1cb404a1ec1d9c5882f35923e262f43e314a629bc9950c6e962e2",
+  "source_media_rereads": 0,
+  "neural_model_loads": 0,
+  "method": "Cached SigLIP2/R3D18 rows; fitting-group-only normal cosine memory (three distinct groups) or sparse positive-versus-normal prototype ratios (one/three groups), with mean-top3 or adjacent-pair persistence pooling. Positive support only within annotation±2seconds; other positive times remain unknown.",
+  "conclusion": "All twelve predefined candidates failed; no validation, final model, export or serving change"
+}

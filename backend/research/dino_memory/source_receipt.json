@@ -1,0 +1,23 @@
+{
+  "status": "source_only_reproduction_port_not_executed",
+  "original_code_sha256": "ba674186400522df97af70193d4bf5c3c9860131679163cf22fe7ec076de92b6",
+  "original_policy_sha256": "068f365167a7c20a8ec002ea8b7c7a23cffb525cb433bcde1ed49ee2a73a06d3",
+  "algorithm_ast_sha256": {
+    "unit": "7886eeb856d18c0e7b0ac5d34c743b54e6b9e997092e7370edfe014ed287372e",
+    "single_tile": "2e9371d098ad2d447117040a4647ea5f358d3712ca52de803bd030edb2066b29",
+    "embedding": "241225e5099bc68bb941061e1e2cd0c5bf0dabab82caee78e37c57aab2968abf",
+    "extract": "c88a63082030c04c44d32b8097bf5dc16877099c3fa0ad515c8c7dc51e178a02",
+    "load": "b3f4192652e1278e786fba1044d9e6c665dbeaec952ade70f3d3fd6b6f5d5099",
+    "memory": "b4b68e85fb9933849dff18cce611a3bb127d09a24b407949bf6bd70b6cf272cb",
+    "frame_scores": "71cc1b9eb3cec923a6e5000ba66c26fbb25b3f0b59d9163af7e955e1a93a683d",
+    "aggregate": "a526ee96ec9cbdac1ddc76085b1e644e1e6e93026b4370964fc91437ab228ff4",
+    "metrics": "d61d3a0f7f4b15d2d6816a6a5c2d8b2da601b0a02016afd954b38d33f9edb50e",
+    "choose_threshold": "c55b0346420d2c8c63fb3c99932dd969cf8e1991cae5e360e489b041fc5dc053",
+    "train": "4a7434e41f14d28e13b1751a057bd1ffd86b2e22a2068576f53cf704124b7c32"
+  },
+  "model": "facebook/dinov2-small",
+  "revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+  "port_contract": "New explicit paths and metadata validation use a new run binding. Original caches/freezes are never reused or rewritten.",
+  "portable_neural_loads": 0,
+  "portable_source_inputs_processed": 0
+}

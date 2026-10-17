@@ -1,0 +1,112 @@
+{
+  "study": "Conditional two-candidate DINO temporal MIL study",
+  "publication_status": "published_aggregate_rejected_study",
+  "training_groups": 24,
+  "positive_training_groups": 13,
+  "normal_training_groups": 11,
+  "folds": 4,
+  "declared_configurations": 2,
+  "selection_groups_evaluated": 0,
+  "test_groups_evaluated": 0,
+  "quality_validated": false,
+  "serving_changed": false,
+  "scope": "Training-only exploratory OOF candidate selection; not independent accuracy",
+  "private_source_or_prediction_records_included": false,
+  "method_references": [
+    {
+      "title": "Scikit-learn: grouped cross-validation",
+      "url": "https://scikit-learn.org/stable/modules/cross_validation.html",
+      "context": "Separate independent groups and retain a final evaluation set."
+    },
+    {
+      "title": "Scikit-learn: threshold selection",
+      "url": "https://scikit-learn.org/stable/modules/classification_threshold.html",
+      "context": "Choose an operating point from held-out training scores, without tuning on evaluation outcomes."
+    },
+    {
+      "title": "Scientific Agent Skills: A Library of Procedural Knowledge for Research Agents",
+      "url": "https://doi.org/10.48550/arXiv.2609.00065",
+      "authors": "Timothy Kassis, Vinayak Agarwal, Yuhuan He, Darshil Patel, Aubrey M. Brueckner",
+      "year": 2026,
+      "context": "Supplementary scikit-learn workflow guidance; latest arXiv record checked 17 October 2026 (v2)."
+    },
+    {
+      "title": "DINOv2 primary paper",
+      "url": "https://arxiv.org/abs/2304.07193",
+      "context": "Source of the frozen visual representation, not a task-specific quality claim."
+    },
+    {
+      "title": "Official base DINOv2 repository and licence",
+      "url": "https://github.com/facebookresearch/dinov2",
+      "context": "Base code and weights; distinct XRay/Cell terms do not apply to the selected base checkpoint."
+    },
+    {
+      "title": "Pinned official DINOv2-small assets",
+      "url": "https://huggingface.co/facebook/dinov2-small/tree/ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "context": "Public asset provenance. The fixed two-tile transform differs from the published processor crop."
+    },
+    {
+      "title": "Real-world Anomaly Detection in Surveillance Videos",
+      "url": "https://arxiv.org/abs/1801.04264",
+      "context": "Multiple-instance video/segment supervision concept; the fixed small local learner is an adaptation, not a reproduction of the paper."
+    }
+  ],
+  "outcome_available": true,
+  "status": "rejected_train_gate",
+  "selected_index": 0,
+  "selected": {
+    "configuration": {
+      "view": "patch"
+    },
+    "oof_roc_auc": 0.5104895104895105,
+    "oof_standardized_partial_auc_fpr25": 0.5164835164835165,
+    "threshold": null,
+    "operating_point": null,
+    "training_gate_passed": false
+  },
+  "candidates": [
+    {
+      "configuration": {
+        "view": "patch"
+      },
+      "oof_roc_auc": 0.5104895104895105,
+      "oof_standardized_partial_auc_fpr25": 0.5164835164835165,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "view": "centered_patch"
+      },
+      "oof_roc_auc": 0.44055944055944063,
+      "oof_standardized_partial_auc_fpr25": 0.5044955044955045,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    }
+  ],
+  "fit_diagnostics": [
+    {
+      "view": "patch",
+      "fold_optimizer_iterations_min": 23,
+      "fold_optimizer_iterations_max": 34,
+      "boundary_self_only_positive_bags_across_fitting_folds": 0
+    },
+    {
+      "view": "centered_patch",
+      "fold_optimizer_iterations_min": 28,
+      "fold_optimizer_iterations_max": 44,
+      "boundary_self_only_positive_bags_across_fitting_folds": 0
+    }
+  ],
+  "generic_learner_policy_sha256": "223c838ea5082cade35757538ac7b6d52a41a584567a6ff1dd8db678bde174ad",
+  "score_kind": "uncalibrated sigmoid smooth-MIL bag score",
+  "feature_dimensions": 384,
+  "source_media_rereads": 0,
+  "neural_model_loads": 0,
+  "public_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+  "public_model_weights_sha256": "ae1e99fcefd534ed978cdeb8326f08030c96e28b7a81ffcbc98a857c84d14be1",
+  "sample_interval_sec": 2,
+  "limitation": "Sparse bag supervision does not establish complete event intervals/types"
+}

@@ -22,6 +22,19 @@ A separate fixed recipe fine-tuned the final SigLIP2 vision block and a binary h
 
 Qwen3-VL-2B ran locally with four motion-selected frames per group and twelve strictly parsed ternary observations. All 24 training groups completed. Fixed four-fold OOF selection preferred the predefined ordinal rule, whose ROC-AUC and standardized partial AUC were both 0.50; no threshold met the joint specificity/recall rule. Each logistic candidate had ROC-AUC 0.458042 and partial AUC 0.489011. The failed training gate stopped selection before the eight development groups. The original strict synthetic control failure and subsequent exploratory protocol amendment remain recorded. No Qwen model was deployed. See the [aggregate semantic study](qwen_semantic_study.md) and [machine-readable record](qwen_semantic_study.json).
 
+A further training-only follow-up tested 27 declared variants on the same 24 groups: 12 cached SigLIP/R3D normal-memory or sparse-prototype variants, 12 two-tile DINOv2 variants, two learned local MIL heads and one signed-transition MIL head. Every family failed its frozen training gate; no additional selection or original test group was evaluated. These variants are correlated development attempts, not 27 independent benchmarks. No detector was replaced.
+
+| Training-only family | Selected OOF ROC-AUC | Partial AUC at FPR ≤0.25 | Eligible joint operating point |
+| --- | --- | --- | --- |
+| [Cached normal memory/prototypes](cached_feature_study.md) | 0.468531 | 0.456543 | None |
+| [DINOv2 two-tile memory/prototypes](dino_memory_study.md) | 0.517483 | 0.552448 | None |
+| [Learned local patch MIL](dino_mil_study.md) | 0.510490 | 0.516484 | None |
+| [Signed local-transition MIL](dino_transition_mil_study.md) | 0.412587 | 0.484515 | None |
+
+DINOv2 extraction completed all 24 groups without failure: 375 sampled frames and 750 tile-encoder calls. Recorded clip processing ranged from 3.874 to 91.758 seconds, excluding cold initialization and service overhead. The supervised MIL recipes trained shared local heads with sparse positive bags, normal hard examples, class/clip balancing and deterministic bounded optimization. They did not mark every patch in a positive clip as a positive instance. All new metrics were independently recomputed; 129 numerical audit checks are separate from application tests and model accuracy.
+
+The [portable DINO research workflow](../backend/research/dino_memory/README.md) preserves the rejected numerical procedure, two fixed portrait tiles, validated private manifests and media-free contract checks. Eleven numerical/extraction functions match the executed source structurally. Its heavy portable path has not been rerun and is not a serving engine.
+
 The [portable SigLIP2 research workflow](../backend/research/siglip2/README.md) preserves the fixed fitting and scoring method with explicit local paths, verified assets and media-free contract checks. Its original candidate was rejected, and the portable heavy workflow has not been rerun. It is experimental research and does not connect to the application engine.
 
 The [aggregate study record](model_studies.json) contains the measured counts and selection details. Features, source identities, semantic outputs, weights and clip-level predictions remain private. The original eight test groups were not evaluated by these studies; their earlier V1 exposure remains documented.

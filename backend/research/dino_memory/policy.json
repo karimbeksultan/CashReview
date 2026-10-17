@@ -1,0 +1,22 @@
+{
+  "study": "DINOv2-small local normal memory and sparse positive prototypes",
+  "status": "exploratory v3 zero-change convention and cold-load feasibility amendment before source inference; v1/v2 synthetic-only receipts retained",
+  "seed": 26017,
+  "source_scope": "original train24 only; reused selection8 only after frozen train gate; never original exposed test8",
+  "representation": "frozen official facebook/dinov2-small; two full-width RGB crops in top,bottom order: y[0:ceil(.6H)] then y[floor(.4H):H], each resized224x224 PIL bilinear; official ImageNet normalization;2CLS384 and16x16patchtokens meanpooled4x4cells per tile->32cells384, L2unit each",
+  "sampling": "sequential source PTS every2sec from0; bounded146sec duration; at most74 samples; no annotation-driven extraction",
+  "views": ["global", "patch", "centered_patch"],
+  "centered_patch": "subtract per-clip temporal median of cell embeddings, then unit L2; no learned transform and no cross-video fit",
+  "zero_change_convention": "any query cell with L2norm<1e-8 has minimum review signal:normal_novelty0 andpositive_normal_margin-2; stable zero motion is not treated as maximum novelty",
+  "memory": "each normal fitting clip at most16 uniform chronological samples; positive fitting samples within2.001sec of sparse anchors only, at most8 uniform eligible samples; all other positive times unknown",
+  "scorers": ["normal_novelty", "positive_normal_margin"],
+  "spatial_score": "cosine nearest neighbor at same cell/tile; normal_novelty=1-maxcos(normal), positive_normal_margin=maxcos(positive)-maxcos(normal); average largest4 of32 cells or both2CLS scores",
+  "temporal_aggregations": ["quantile90", "adjacent2_mean_maximum"],
+  "candidates": 12,
+  "selection": "four fixed stratified content-group training folds; no fold sees its held-out clip in memory; maximize standardized partialAUC atFPR.25 then ROC-AUC then declared order; threshold trainOOF only",
+  "threshold": "require specificity>=.8, recall>=.5, balanced_accuracy>=.65; maximize balancedaccuracy then precision then specificity then higher threshold; reject allpositive/allnegative",
+  "train_gate": "ROC-AUC>.6 and standardizedpartialAUC>.5 and eligiblethreshold",
+  "development_gate": "single frozen choice on reused8 selection groups, specificity>=.75, recall>=.75, BA>=.75; exploratory support only, not independent competition accuracy",
+  "runtime": "CPU two threads; local_files_only; no remote_code; one heavy process; 295sec per clip watchdog; no silent exclusion/retry",
+  "privacy": "source data, labels, arrays, split identifiers and per-clip outputs remain private; only aggregate metrics published"
+}

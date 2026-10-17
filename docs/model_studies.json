@@ -291,6 +291,62 @@
       "promoted": false,
       "outcome": "rejected_train_gate",
       "aggregate_report": "qwen_semantic_study.json"
+    },
+    {
+      "name": "Cached frozen-feature normal-memory/prototype comparison",
+      "training_groups": 24,
+      "declared_configurations": 12,
+      "training_oof_roc_auc": 0.46853146853146854,
+      "training_oof_standardized_partial_auc_fpr025": 0.45654345654345657,
+      "training_gate_passed": false,
+      "eligible_operating_point_found": false,
+      "development_groups_evaluated": 0,
+      "new_test_evaluated": 0,
+      "promoted": false,
+      "quality_validated": false,
+      "detail": "cached_feature_study.json"
+    },
+    {
+      "name": "DINOv2-small two-tile local-memory/prototype comparison",
+      "training_groups": 24,
+      "declared_configurations": 12,
+      "training_oof_roc_auc": 0.5174825174825175,
+      "training_oof_standardized_partial_auc_fpr025": 0.5524475524475525,
+      "training_gate_passed": false,
+      "eligible_operating_point_found": false,
+      "development_groups_evaluated": 0,
+      "new_test_evaluated": 0,
+      "promoted": false,
+      "quality_validated": false,
+      "detail": "dino_memory_study.json"
+    },
+    {
+      "name": "Conditional two-candidate DINO temporal MIL study",
+      "training_groups": 24,
+      "declared_configurations": 2,
+      "training_oof_roc_auc": 0.5104895104895105,
+      "training_oof_standardized_partial_auc_fpr025": 0.5164835164835165,
+      "training_gate_passed": false,
+      "eligible_operating_point_found": false,
+      "development_groups_evaluated": 0,
+      "new_test_evaluated": 0,
+      "promoted": false,
+      "quality_validated": false,
+      "detail": "dino_mil_study.json"
+    },
+    {
+      "name": "Conditional signed-transition DINO temporal MIL study",
+      "training_groups": 24,
+      "declared_configurations": 1,
+      "training_oof_roc_auc": 0.4125874125874126,
+      "training_oof_standardized_partial_auc_fpr025": 0.48451548451548454,
+      "training_gate_passed": false,
+      "eligible_operating_point_found": false,
+      "development_groups_evaluated": 0,
+      "new_test_evaluated": 0,
+      "promoted": false,
+      "quality_validated": false,
+      "detail": "dino_transition_mil_study.json"
     }
   ],
   "remaining_evidence": [
@@ -298,5 +354,12 @@
     "Independent new recordings/cameras",
     "New-model full-path performance and offline tests"
   ],
-  "quality_validated": false
+  "quality_validated": false,
+  "latest_training_only_followup": {
+    "declared_variants": 27,
+    "executed_variants": 27,
+    "independent_benchmarks": false,
+    "all_training_gates_failed": true,
+    "additional_test_groups_evaluated": 0
+  }
 }
