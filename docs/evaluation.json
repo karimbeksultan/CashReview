@@ -1,0 +1,108 @@
+{
+  "model_version": "mobilenetv2-local-review-v1",
+  "evaluation_kind": "frozen_exact-content-group_holdout",
+  "seed": 26017,
+  "split_sizes": {
+    "train": 24,
+    "validation": 8,
+    "test": 8
+  },
+  "test_submitted": 8,
+  "test_completed": 8,
+  "test_failed": 0,
+  "test_class_counts": {
+    "positive": 4,
+    "negative": 4
+  },
+  "completion_rate": 1.0,
+  "confusion_matrix_labels": [
+    "negative",
+    "positive"
+  ],
+  "confusion_matrix_true_rows_predicted_columns": [
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      4
+    ]
+  ],
+  "video_precision": 0.5,
+  "video_recall": 1.0,
+  "video_f1": 0.6666666666666666,
+  "video_accuracy_completed": 0.5,
+  "video_accuracy_all_submitted": 0.5,
+  "accuracy_wilson_95": [
+    0.2152,
+    0.7848
+  ],
+  "recall_wilson_95": [
+    0.5101,
+    1
+  ],
+  "specificity_wilson_95": [
+    0,
+    0.4899
+  ],
+  "positive_videos_with_signal_within_5sec_of_any_supplied_timestamp": 3,
+  "positive_video_timestamp_coverage": 0.75,
+  "timestamp_tolerance_sec": 5,
+  "timestamp_tolerance_basis": "Team baseline diagnostic choice, not a brief requirement",
+  "event_precision_recall": "not measured: complete event intervals/type annotations unavailable",
+  "threshold": 0.1,
+  "threshold_selected_on": "validation only",
+  "feature_extraction_sec_test_median": 2.94550000000163,
+  "hardware": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "logical_cpus": 8,
+    "opencv": "5.0.0",
+    "numpy": "2.5.4",
+    "cv_threads": 2
+  },
+  "competition_ready": false,
+  "limitations": [
+    "Only eight unique content groups in the holdout; wide statistical uncertainty.",
+    "Same source camera/setting may correlate across splits; near duplicates/session grouping not reviewed.",
+    "Frozen feature extraction on test pixels is inference; scaler/classifier fitting and threshold selection exclude test groups.",
+    "Positive labels supply isolated timestamps. Duplicate positive annotations retain both 57/68-second possibilities.",
+    "No event taxonomy, semantic action validation, legal correctness or alternate-camera generalization established.",
+    "Feature timing excludes upload/queue/polling and is not end-to-end service latency."
+  ],
+  "runtime_engine_smoke": [
+    {
+      "case": "heldout_negative",
+      "source_class": "negative",
+      "completed": true,
+      "verdict": "violation",
+      "runtime_sec": 12.125,
+      "duration_sec": 71.6,
+      "event_count": 2,
+      "validated_jpegs": 6
+    },
+    {
+      "case": "heldout_positive",
+      "source_class": "positive",
+      "completed": true,
+      "verdict": "violation",
+      "runtime_sec": 7.343,
+      "duration_sec": 25.9333,
+      "event_count": 1,
+      "validated_jpegs": 3
+    },
+    {
+      "case": "longest_source_clip",
+      "source_class": "negative",
+      "completed": true,
+      "verdict": "violation",
+      "runtime_sec": 35.735,
+      "duration_sec": 142.5333,
+      "event_count": 1,
+      "validated_jpegs": 3
+    }
+  ],
+  "artifact_version_note": "Exact private artifact version is retained in local model provenance; no source or artifact hashes are exported.",
+  "test_exposure_note": "First model evaluated on this frozen partition; the failed result was exposed before the rejected v2 design. Any later reused-test results are exploratory."
+}

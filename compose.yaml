@@ -1,0 +1,23 @@
+services:
+  cash-review:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      CASH_REVIEW_API_KEY: ${CASH_REVIEW_API_KEY:?Set a private jury API key in .env}
+      CASH_REVIEW_MODEL_DIR: /models
+      CASH_REVIEW_REFERENCE_LABELS: /models/reference_labels.json
+      CASH_REVIEW_DATA_DIR: /data
+      CASH_REVIEW_WORKERS: 1
+      CASH_REVIEW_QUEUE_CAPACITY: 8
+    volumes:
+      - ./models:/models:ro
+      - review-runtime:/data
+    init: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  review-runtime:

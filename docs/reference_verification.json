@@ -1,0 +1,10 @@
+{
+  "kind": "independent_sponsor_reference_http_smoke",
+  "passed": true,
+  "model_decision": "violation",
+  "model_type": "visual_review_signal",
+  "sponsor_reference": "no_violation",
+  "sponsor_type": null,
+  "independent_predictions_preserved": true,
+  "reference_display_did_not_override_model": true
+}

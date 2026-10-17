@@ -1,0 +1,30 @@
+{
+  "model_kind": "video-gated",
+  "training_groups": 24,
+  "validation_groups": 8,
+  "fixed_C": 0.1,
+  "video_feature_policy": "mean,std,max,q90 of frozen1032 features; no duration or identity input",
+  "gate_threshold": 0.15,
+  "validation_balanced_accuracy": 0.375,
+  "validation_precision": 0.4,
+  "validation_f1": 0.4444444444444444,
+  "validation_confusion_true_rows_predicted_columns": [
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "promotable_by_declared_validation_check": false,
+  "test_used_for_model_or_threshold_selection": false,
+  "test_status": "Previously exposed by v1; any v2 report on that partition is exploratory",
+  "attempt": "video-gated-v2",
+  "prior_holdout_exposure": true,
+  "v1_failure_known_before_design": true,
+  "v2_test_evaluated": false,
+  "runtime_artifact_promoted": false,
+  "prior_holdout_note": "The original eight test groups were exposed by v1; they were not used to fit/select this gate and were not reevaluated for v2."
+}

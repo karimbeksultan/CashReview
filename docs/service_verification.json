@@ -1,0 +1,53 @@
+{
+  "kind": "real_local_http_smoke",
+  "network": "loopback",
+  "independent_public_network": false,
+  "offline_network_disabled_test": false,
+  "all_completed": true,
+  "results": [
+    {
+      "source_class": "negative",
+      "client": "jury",
+      "duration_sec": 71.6,
+      "upload_to_result_sec": 16.485,
+      "status": "done",
+      "verdict": "violation",
+      "events": 2,
+      "validated_jpegs": 6,
+      "observed_states": [
+        "done",
+        "processing"
+      ]
+    },
+    {
+      "source_class": "positive",
+      "client": "jury",
+      "duration_sec": 25.9333,
+      "upload_to_result_sec": 5.812,
+      "status": "done",
+      "verdict": "violation",
+      "events": 1,
+      "validated_jpegs": 3,
+      "observed_states": [
+        "done",
+        "processing"
+      ]
+    },
+    {
+      "source_class": "negative",
+      "client": "browser",
+      "duration_sec": 142.5333,
+      "upload_to_result_sec": 20.375,
+      "status": "done",
+      "verdict": "violation",
+      "events": 1,
+      "validated_jpegs": 3,
+      "observed_states": [
+        "done",
+        "processing"
+      ]
+    }
+  ],
+  "auth_isolation_passed": true,
+  "performance_scope": "Three sequential local HTTP jobs; no concurrent load test, no new accuracy evaluation."
+}
