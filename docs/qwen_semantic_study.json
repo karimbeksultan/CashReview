@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "study": "local_qwen_visible_actions_exploratory_v3",
+  "status": "rejected_train_gate",
+  "quality_validated": false,
+  "promoted_to_serving_by_this_study": false,
+  "protocol_hash": "c080ccd154b1e51654d8d5d9420695fc6aa3d6a87b60d8a685012bea95873a0a",
+  "binding_hash": "f349737c56c8371439d074d2669b441ef264304e1c9767acc8f6d86c92885599",
+  "scope": {
+    "physical_source_videos": 42,
+    "exact_content_groups": 40,
+    "train_groups": 24,
+    "selection_groups": 8,
+    "original_test_groups": 8,
+    "original_test_processed_by_this_study": 0,
+    "original_test_exposed_by_earlier_baseline": true,
+    "historical_unsupervised_preparation": "Before v3, motion-frame preparation decoded the 32 development groups, including selection8; no case VLM outputs existed. V3 used a separate namespace. Selection inference required a passing frozen training gate and was never performed because that gate failed.",
+    "source_pixels_and_derived_case_facts_remained_local": true
+  },
+  "control_and_amendment": {
+    "original_named_v2_strict_zero_action_control": "FAILED_PRESERVED",
+    "observed": 0,
+    "not_observed": 11,
+    "unclear": 1,
+    "schema_and_consistency_valid": true,
+    "amendment_locally_frozen_before_case_inference": "V3 permits explicit unclear as its own missingness channel; unclear is never an observed action. This does not relabel the original strict control passed."
+  },
+  "method": {
+    "sampler": "Four chronological native JPEG95 frames: two unsupervised motion anchors, each +/-0.8 seconds; 4fps grayscale176x96 scan, three-sample smoothing, anchor separation max(6 seconds,20% duration). No supplied annotation times or labels are inference inputs.",
+    "semantic_extraction": "Unchanged named-v2 prompt/schema/strict dependency and short-paired-support parser; twelve ternary facts. Contradictory or invalid output is fatal; no semantic retry, repair, dropping or imputation.",
+    "features": "36 float64 fact-major one-hot values: [unclear,not_observed,observed] for each of twelve facts.",
+    "candidates": [
+      "balanced_L2_LR_C0.01",
+      "balanced_L2_LR_C0.1",
+      "balanced_L2_LR_C1",
+      "fixed_observed_risk_rule"
+    ],
+    "rule": "Ordinal0-5:2*observed(cash_in_clothing)+observed(outside_person_reach)+observed(cash_unattended)+observed(other_storage_access). This is a fixed research score, not a legal determination.",
+    "training": "Four stratified training-group folds, seed26017; fold-local StandardScaler and fresh balanced L2 liblinear logistic regression. No selection-group fitting.",
+    "candidate_selection": "Highest train OOF standardized partial ROC-AUC at FPR<=0.25, then balanced accuracy at0.5, then specificity at0.5, then smaller LR C; exact ties preserve declared order with fixed rule after LR.",
+    "threshold_selection": "Training OOF scores only; adjacent-score midpoints and outer extrema+/-1e-6. Require specificity>=0.75,recall>=0.5,balanced_accuracy>0.5; maximize balanced accuracy,then precision,then higher threshold.",
+    "training_chance_gate": {
+      "roc_auc_strictly_greater_than": 0.55,
+      "partial_roc_auc_strictly_greater_than": 0.5
+    },
+    "quality_gate_for_train_operating_point_and_once_only_selection": {
+      "specificity_at_least": 0.75,
+      "recall_at_least": 0.5,
+      "balanced_accuracy_strictly_greater_than": 0.5,
+      "all_cohort_groups_required": true
+    },
+    "runtime": {
+      "image_min_tokens": 256,
+      "image_max_tokens": 256,
+      "threads": 4,
+      "context_size": 4096,
+      "batch_size": 256,
+      "ubatch_size": 128,
+      "temperature": 0,
+      "seed": 26017,
+      "maximum_generated_tokens": 320,
+      "cpu_only": true,
+      "offline": true,
+      "whole_attempt_deadline_sec": 295,
+      "cli_rss_limit_mib": 3072,
+      "minimum_available_host_ram_mib": 384
+    }
+  },
+  "counts": {
+    "train": {
+      "expected": 24,
+      "attempted": 24,
+      "completed": 24,
+      "failed": 0,
+      "in_progress": 0,
+      "unattempted": 0,
+      "resources": {
+        "completed_attempts_sum_sec": 3584.9219999999914,
+        "completed_attempts_mean_sec": 149.37174999999965,
+        "completed_attempts_median_sec": 144.84399999999732,
+        "completed_attempts_max_sec": 212.26599999997416,
+        "peak_cli_rss_mib": 2750.0625
+      },
+      "failure_codes": []
+    },
+    "selection": {
+      "expected": 8,
+      "attempted": 0,
+      "completed": 0,
+      "failed": 0,
+      "in_progress": 0,
+      "unattempted": 8,
+      "resources": {
+        "completed_attempts_sum_sec": 0,
+        "completed_attempts_mean_sec": null,
+        "completed_attempts_median_sec": null,
+        "completed_attempts_max_sec": null,
+        "peak_cli_rss_mib": null
+      },
+      "failure_codes": []
+    },
+    "test_processed": 0
+  },
+  "resource_measurement_scope": "3584.922 seconds is the sum of 24 fresh v3 attempts, not whole-study elapsed time. Each attempt includes source hashing, a new native full-clip motion scan, four JPEG preparations, prompt creation, local CLI model load/vision-language inference, parsing and response-artifact binding. File timestamps independently confirm 24/24 frame preparations occurred within their attempts; earlier prepared development frames were not reused. The sum excludes earlier unsupervised frame preparation, downloads/setup, synthetic controls, freeze and audit helpers, Python process import/startup outside the attempt, controller persistence outside its timer, final cross-validation/head selection, and HTTP upload/queue/polling. CLI RSS is PeakWorkingSetSize/1024^2 (MiB), excludes the Python controller and other processes. This does not qualify whole-service or concurrent latency.",
+  "training": {
+    "training_gate_passed": false,
+    "training_groups": 24,
+    "folds": 4,
+    "candidate": "fixed_observed_risk_rule",
+    "candidates": [
+      {
+        "name": "balanced_L2_LR_C0.01",
+        "c": 0.01,
+        "pauc": 0.489010989010989,
+        "auc": 0.45804195804195813,
+        "at_0_5": {
+          "true_positive": 13,
+          "true_negative": 0,
+          "false_positive": 11,
+          "false_negative": 0,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "precision": 0.5416666666666666,
+          "balanced_accuracy": 0.5,
+          "f1": 0.7027027027027027
+        }
+      },
+      {
+        "name": "balanced_L2_LR_C0.1",
+        "c": 0.1,
+        "pauc": 0.489010989010989,
+        "auc": 0.45804195804195813,
+        "at_0_5": {
+          "true_positive": 13,
+          "true_negative": 0,
+          "false_positive": 11,
+          "false_negative": 0,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "precision": 0.5416666666666666,
+          "balanced_accuracy": 0.5,
+          "f1": 0.7027027027027027
+        }
+      },
+      {
+        "name": "balanced_L2_LR_C1",
+        "c": 1.0,
+        "pauc": 0.489010989010989,
+        "auc": 0.45804195804195813,
+        "at_0_5": {
+          "true_positive": 13,
+          "true_negative": 0,
+          "false_positive": 11,
+          "false_negative": 0,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "precision": 0.5416666666666666,
+          "balanced_accuracy": 0.5,
+          "f1": 0.7027027027027027
+        }
+      },
+      {
+        "name": "fixed_observed_risk_rule",
+        "c": null,
+        "pauc": 0.5,
+        "auc": 0.5,
+        "at_0_5": {
+          "true_positive": 0,
+          "true_negative": 11,
+          "false_positive": 0,
+          "false_negative": 13,
+          "recall": 0.0,
+          "specificity": 1.0,
+          "precision": 0.0,
+          "balanced_accuracy": 0.5,
+          "f1": 0.0
+        }
+      }
+    ],
+    "selected_oof_auc": 0.5,
+    "selected_oof_pauc": 0.5,
+    "threshold": null,
+    "threshold_statistics": null,
+    "status": "rejected_train_gate"
+  },
+  "selection": null,
+  "provenance": {
+    "model_repository": "https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct-GGUF",
+    "model_revision": "52d6c8ffea26cc873ac5ad116f8631268d7eb503",
+    "model_license": "Apache-2.0; actual license copy and source notice retained privately with preparation assets",
+    "official_weight_artifacts": {
+      "Qwen3VL-2B-Instruct-Q4_K_M.gguf": {
+        "sha256": "089d75c52f4b7ffc56ba998ffc50aae89fcafc755f9e7208aacca281dca6c2ae",
+        "bytes": 1107409952
+      },
+      "mmproj-Qwen3VL-2B-Instruct-Q8_0.gguf": {
+        "sha256": "f9a68fabba69c3b81e153367b2c7521030b0fa8bb0de400c9599c8e6725f9c82",
+        "bytes": 445053216
+      }
+    },
+    "runtime_repository": "https://github.com/ggml-org/llama.cpp",
+    "runtime_build": "b11707 commit1268edac5",
+    "runtime_license": "MIT, separate from the pretrained-weight license",
+    "official_runtime_artifact_hashes": {
+      "llama-mtmd-cli.exe": {
+        "sha256": "1fd18b12ae7abf21048e23982777b73a8e0553fcdace604ed9c9089883e407fd",
+        "bytes": 96768
+      },
+      "ggml-base.dll": {
+        "sha256": "30c5f6fe4103ce3c682a7fe0ccefbc2a12bf26b4dc8ff5f2d20af31d9bac2994",
+        "bytes": 803840
+      },
+      "ggml-cpu-alderlake.dll": {
+        "sha256": "e24bb4951d6c16767650c7f15947160e78cfc27edf0670b01107826eb5acd763",
+        "bytes": 1415168
+      },
+      "ggml-cpu-cannonlake.dll": {
+        "sha256": "e0747b1c80b52ac92a5fabac5375085e1a79265de0c590e5dd439dc64c15b88d",
+        "bytes": 1610752
+      },
+      "ggml-cpu-cascadelake.dll": {
+        "sha256": "1c34826b6c6768e7c023bca05a21a870a97388e757bfffe92a215a01c4cc6be5",
+        "bytes": 1583616
+      },
+      "ggml-cpu-cooperlake.dll": {
+        "sha256": "3deccb9b1eafd97a4217a5aa362062a4799dc8cd1497c6cccb009197c024a209",
+        "bytes": 1593344
+      },
+      "ggml-cpu-haswell.dll": {
+        "sha256": "385caacacf3c623e90dfca0451359bf25ea0bcca1aef3bd97ffba8f78e4ded09",
+        "bytes": 1420288
+      },
+      "ggml-cpu-icelake.dll": {
+        "sha256": "98efac53be03d8ce605b1f89d4491d8727764d3219e4fd4065746202aa7e517f",
+        "bytes": 1590272
+      },
+      "ggml-cpu-ivybridge.dll": {
+        "sha256": "7a6ad15ec149a8fca2ff5ccd52cd27be05cefce7d24fb79104d3382109288d3f",
+        "bytes": 1301504
+      },
+      "ggml-cpu-piledriver.dll": {
+        "sha256": "7e0bdc06a462413865cc12994dda0d6c51b1833c59fe74036ddc568eeb5efa7d",
+        "bytes": 1294336
+      },
+      "ggml-cpu-sandybridge.dll": {
+        "sha256": "c459e5f4119a04b582c4544114afceb12e0fc852f9dd4db3f179945d0a4b087c",
+        "bytes": 1291264
+      },
+      "ggml-cpu-sapphirerapids.dll": {
+        "sha256": "d8765a8f71d3b2514c88b76e8ecfdff5cdfd9ddd204565b5cc5e46bcfa6f46ba",
+        "bytes": 1869824
+      },
+      "ggml-cpu-skylakex.dll": {
+        "sha256": "82541c2bb0186f90640a37a75a7e86c489b833a5505301188c1519b2181218ff",
+        "bytes": 1603584
+      },
+      "ggml-cpu-sse42.dll": {
+        "sha256": "f7dbe0a3ee76e99ed801721972b20a501e9c371867cf87c3cfdae5ced0b879c8",
+        "bytes": 916992
+      },
+      "ggml-cpu-x64.dll": {
+        "sha256": "6c7c6d1759bd61e0e53d5d0e83c820c5d2c4f4050422343b38efb0fe87ef34a4",
+        "bytes": 909824
+      },
+      "ggml-cpu-zen4.dll": {
+        "sha256": "23b1477e5e6a0caf79c6e8a64d2c3412ab5af1f0750a97566f39570cd20ecba5",
+        "bytes": 1600000
+      },
+      "ggml-rpc.dll": {
+        "sha256": "36a2d2a254c15215b8c291d3a6f258df301e0ed70895765374cc8bb34fed607e",
+        "bytes": 231424
+      },
+      "ggml.dll": {
+        "sha256": "75a703ef4da9ec760522a39ac93efc6dc3636fffe2febea41c325e9e0a4e9732",
+        "bytes": 78848
+      },
+      "libomp.dll": {
+        "sha256": "a12116ba72d1d6820407cf30be23da04ce79d6bb8a71a5ee71759c5a1faa6f1c",
+        "bytes": 768000
+      },
+      "llama-batched-bench-impl.dll": {
+        "sha256": "3a66c843422b0678567e2b251fd328501c3de4a397706b72f43e74c5cf2ca959",
+        "bytes": 61952
+      },
+      "llama-bench-impl.dll": {
+        "sha256": "4be19c60ae2e6d2f5cb56e849fedab2a3b202d3c45f7bf23e83750a9210b474b",
+        "bytes": 404480
+      },
+      "llama-cli-impl.dll": {
+        "sha256": "054ae9df40f32b370062c3e3b0914e26cdb09dd46d37926fc19a1488c5a3a885",
+        "bytes": 3337216
+      },
+      "llama-common.dll": {
+        "sha256": "050f3e6eb4595ab0ef0d9cd9a612a7434cde9a285c99270e7dc2b3782c60b5bb",
+        "bytes": 8147456
+      },
+      "llama-completion-impl.dll": {
+        "sha256": "2eaf36fcd7a59d2255a99f258ccc42bbe0531b188298f3bd53eb25a6fab9df63",
+        "bytes": 140800
+      },
+      "llama-fit-params-impl.dll": {
+        "sha256": "abd78ecbf04e66eca3de1f4de83834b6903f8efb96969a107f7564ec160f330a",
+        "bytes": 43008
+      },
+      "llama-perplexity-impl.dll": {
+        "sha256": "9989cd60be229df8cf75df853a4039b7108afb3834da88eb3b3a6553a306907e",
+        "bytes": 197632
+      },
+      "llama-quantize-impl.dll": {
+        "sha256": "060363376dc314dd514ec80d32a1b928105f8b302f5d09e5e910e16ff678d59e",
+        "bytes": 137216
+      },
+      "llama-server-impl.dll": {
+        "sha256": "dec64241bd86360c3a87603025499eec858c34d7db6d72c8ecbdc7a70494e23f",
+        "bytes": 9259520
+      },
+      "llama.dll": {
+        "sha256": "724f16d5f2651a2a4bfe7856643d26f42afd38fef290523a40a84918a00abc03",
+        "bytes": 3575808
+      },
+      "mtmd.dll": {
+        "sha256": "74b6aa10fc950653f465e6d73c1876e0999b7172161c81bfb5db0616ea6880f0",
+        "bytes": 1905664
+      }
+    },
+    "generic_code_sha256": {
+      "study_v3.py": "2b19239569c443bf7b87c2b5987dcfb7edf75d2b6a9a109a8079fd658d81875f",
+      "semantic_experiment.py": "6dd0249d339bd6d0e41529add1fa5bca91f6d525a834f377cb8bdbcb9ba13b19",
+      "windows_job.py": "d5872a5c625cded81abce45e55e5be66cb77e797f1345aee5721ec1a5ce14ef8",
+      "probe_local.py": "16be1220d6baabe277f333196815acec8dca388b76fdd7093745bcfb7e22346c"
+    },
+    "runtime_versions": {
+      "python": "3.12.14",
+      "os": "Windows",
+      "machine": "AMD64",
+      "numpy": "2.5.4",
+      "opencv-python-headless": "5.0.0.93",
+      "scikit-learn": "1.9.1"
+    }
+  },
+  "limitations": [
+    "The source cohort is small and from a single camera context; train OOF and repeatedly used development selection are not independent generalization validation.",
+    "The original eight test groups were exposed by an earlier baseline and were not processed in this study; there is no new clean held-out test claim.",
+    "Sparse four-frame sampling can miss brief or low-motion actions and 256 image tokens may hide small cash or hand detail.",
+    "Semantic findings, event localization, legal/action taxonomy, intent, identity and authorization are not validated by the binary workbook labels.",
+    "Logistic scores are uncalibrated and the fixed rule is an ordinal 0-5 score, not a probability.",
+    "Any future review anchor is sampled visual context, not causal attribution or a validated per-frame action score.",
+    "No rejected method or failed source attempt is promoted; incomplete cohorts cannot yield a quality pass."
+  ],
+  "independent_numeric_audit": {
+    "status": "PASS",
+    "passed_checks": 11,
+    "total_checks": 11,
+    "checks": {
+      "immutable_protocol_binding": true,
+      "frozen_training_artifact_digests": true,
+      "complete_train_no_exclusions": true,
+      "numeric_shapes_and_binding": true,
+      "all_candidate_metrics_recomputed": true,
+      "candidate_and_training_gate": true,
+      "training_only_operating_point": true,
+      "selection_and_test_absent_at_training_freeze": true,
+      "no_unselected_classifier": true,
+      "unchanged_study_v3.py": true,
+      "unchanged_semantic_experiment.py": true
+    }
+  },
+  "training_gate_components": {
+    "chance_gate_passed": false,
+    "eligible_operating_point_found": false
+  },
+  "additional_independent_numeric_audit": {
+    "status": "PASS",
+    "passed_checks": 43,
+    "total_checks": 43,
+    "scope": "Independent manual rank-pair ROC-AUC and trapezoid-standardized partial AUC; candidate ordering/ties, eligible threshold/tie policy, chance gates, immutable freeze, source-script digests and absence of classifier/selection. Numeric score/label arrays and generic code only; no model, frame or case-fact reads."
+  }
+}

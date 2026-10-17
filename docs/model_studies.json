@@ -271,6 +271,26 @@
       "new_test_evaluated": 0,
       "promoted": false,
       "detail": "siglip_finetune_study.json"
+    },
+    {
+      "name": "Qwen3-VL-2B structured observations exploratory v3",
+      "training_groups": 24,
+      "training_completed": 24,
+      "training_failed": 0,
+      "development_groups_evaluated": 0,
+      "development_groups_unattempted": 8,
+      "selected_candidate": "fixed_observed_risk_rule",
+      "train_oof_auc": 0.5,
+      "train_oof_standardized_pauc_at_fpr_0_25": 0.5,
+      "training_gate_passed": false,
+      "chance_gate_passed": false,
+      "eligible_operating_point_found": false,
+      "selected_threshold": null,
+      "new_test_evaluated": 0,
+      "quality_validated": false,
+      "promoted": false,
+      "outcome": "rejected_train_gate",
+      "aggregate_report": "qwen_semantic_study.json"
     }
   ],
   "remaining_evidence": [
