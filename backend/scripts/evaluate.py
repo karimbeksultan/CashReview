@@ -8,12 +8,17 @@ import os
 import platform
 import sys
 import time
+import zipfile
 from pathlib import Path
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cash_review.engine import _load_artifacts, analyze_video, score_features, score_video_gate
+from cash_review.engine import (_load_artifacts, analyze_video, score_features, score_video_gate,
+                                FeatureExtractor, extract_video)
+from scripts.training_utils import (configured_evidence_side, source_dimensions, validate_evidence_size,
+                                    build_feature_spec, read_feature_cache)
+from scripts.train_baseline import load_features
 
 
 def wilson(successes, total):
@@ -31,35 +36,49 @@ def run(args):
 
     directory = args.model_dir.resolve()
     destination = directory / "evaluation_aggregate.json"
-    if destination.exists() and not args.repeat:
+    if destination.exists() and not args.repeat and not args.runtime_smoke:
         print(destination.read_text(encoding="utf-8"))
         return
     config, weights = _load_artifacts(directory)
+    expected_spec = build_feature_spec(config["backbone_sha256"], config["feature_layer"], config["feature_dim"],
+        config["sample_interval_sec"], FeatureExtractor.feature, extract_video, FeatureExtractor.__init__, cv2.__version__)
+    if config.get("feature_cache_spec") != expected_spec:
+        raise ValueError("Model has no matching versioned feature specification; retrain in a new private artifact directory")
+    extractor = None
+    def features(group):
+        nonlocal extractor
+        path = directory / "features" / (group["sha256"] + ".npz")
+        try:
+            return read_feature_cache(path, group["sha256"], expected_spec)
+        except (ValueError, OSError, KeyError, EOFError, zipfile.BadZipFile):
+            if extractor is None:
+                extractor = FeatureExtractor(directory, config["feature_layer"])
+            return load_features(group, directory, extractor, config["sample_interval_sec"])
     split = json.loads((directory / "split.json").read_text(encoding="utf-8"))
     test = [g for g in split["source"] if split["assignments"][g["sha256"]] == "test"]
     assert all(split["assignments"][g["sha256"]] != "train" for g in test)
     records, failed = [], []
     for group in test:
         try:
-            with np.load(directory / "features" / (group["sha256"] + ".npz"), allow_pickle=False) as data:
-                scores = score_features(data["features"], weights)
-                gate_score = score_video_gate(data["features"], weights) if config.get("schema_version") == 2 else None
-                gate_passed = gate_score is None or gate_score >= config["gate_threshold"]
-                candidates = []
-                for index in np.argsort(-scores, kind="stable"):
-                    if not gate_passed or scores[index] < config["threshold"]:
-                        break
-                    t = float(data["times"][index])
-                    if all(abs(t - old) >= 8 for old in candidates):
-                        candidates.append(t)
-                    if len(candidates) == 3:
-                        break
-                offsets = [min((abs(t - gt) for t in candidates), default=None) for gt in group["timestamps"]]
-                records.append({"sha256": group["sha256"], "truth": int(group["positive"]), "prediction": int(bool(candidates)),
-                                "score": float(scores.max()), "gate_score": gate_score, "candidate_times": candidates,
-                                "annotation_nearest_signal_errors_sec": offsets,
-                                "feature_sec": float(data["feature_sec"]), "duration_sec": float(data["duration_sec"])})
-        except (ValueError, OSError, KeyError) as error:
+            data = features(group)
+            scores = score_features(data["features"], weights)
+            gate_score = score_video_gate(data["features"], weights) if config.get("schema_version") == 2 else None
+            gate_passed = gate_score is None or gate_score >= config["gate_threshold"]
+            candidates = []
+            for index in np.argsort(-scores, kind="stable"):
+                if not gate_passed or scores[index] < config["threshold"]:
+                    break
+                t = float(data["times"][index])
+                if all(abs(t - old) >= 8 for old in candidates):
+                    candidates.append(t)
+                if len(candidates) == 3:
+                    break
+            offsets = [min((abs(t - gt) for t in candidates), default=None) for gt in group["timestamps"]]
+            records.append({"sha256": group["sha256"], "truth": int(group["positive"]), "prediction": int(bool(candidates)),
+                            "score": float(scores.max()), "gate_score": gate_score, "candidate_times": candidates,
+                            "annotation_nearest_signal_errors_sec": offsets,
+                            "feature_sec": float(data["feature_sec"]), "duration_sec": float(data["duration_sec"])})
+        except (ValueError, OSError, KeyError, EOFError, zipfile.BadZipFile) as error:
             failed.append({"sha256": group["sha256"], "error_type": type(error).__name__})
     truth = [r["truth"] for r in records]
     predictions = [r["prediction"] for r in records]
@@ -104,8 +123,8 @@ def run(args):
         os.environ["CASH_REVIEW_MODEL_DIR"] = str(directory)
         smoke = []
         def duration(group):
-            with np.load(directory / "features" / (group["sha256"] + ".npz"), allow_pickle=False) as values:
-                return float(values["duration_sec"])
+            values = features(group)
+            return float(values["duration_sec"])
         benchmarks = [("heldout_negative", next(g for g in test if not g["positive"])),
                       ("heldout_positive", next(g for g in test if g["positive"])),
                       ("longest_source_clip", max(split["source"], key=duration))]
@@ -113,6 +132,8 @@ def run(args):
             started = time.monotonic()
             try:
                 result = analyze_video(Path(group["path"]), started + 240, lambda *_: None)
+                native_size = source_dimensions(Path(group["path"]))
+                evidence_side = configured_evidence_side()
                 decoded = 0
                 import base64
                 for event in result["violations"]:
@@ -120,8 +141,7 @@ def run(args):
                         image = cv2.imdecode(np.frombuffer(base64.b64decode(frame["image_base64"], validate=True), np.uint8), cv2.IMREAD_COLOR)
                         if image is None:
                             raise ValueError("Real evidence JPEG failed decoding")
-                        if max(image.shape[:2]) > 640:
-                            raise ValueError("Evidence exceeds the 640px bound")
+                        validate_evidence_size(image.shape, native_size, evidence_side)
                         if not 0 <= frame["timestamp_sec"] <= result["metadata"]["duration_sec"] + 0.1:
                             raise ValueError("Evidence timestamp outside source duration")
                         decoded += 1

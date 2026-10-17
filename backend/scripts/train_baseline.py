@@ -8,9 +8,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 import sys
 import time
+import zipfile
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +19,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cash_review.engine import FeatureExtractor, MODEL_FILE, MODEL_SHA256, SCHEMA_VERSION, extract_video, score_features, pool_video_features
+from scripts.training_utils import (parse_source_timestamp, build_feature_spec,
+                                    read_feature_cache, write_feature_cache, require_fresh_training_directory)
 
 SEED = 26017
 
@@ -49,10 +51,7 @@ def read_source(data_dir: Path) -> list[dict]:
         positive = str(raw_label).strip() == "нарушение"
         if str(raw_label).strip() not in ("нарушение", "без нарушения"):
             raise ValueError("Unknown label; do not coerce it to negative")
-        timestamp = None
-        if raw_timestamp:
-            numbers = [int(value) for value in re.findall(r"\d+", str(raw_timestamp))]
-            timestamp = float(numbers[0] * 60 + numbers[1] if len(numbers) == 2 else numbers[0])
+        timestamp = parse_source_timestamp(raw_timestamp)
         if positive and timestamp is None:
             raise ValueError("Positive row lacks a timestamp")
         path = files[name]
@@ -97,27 +96,38 @@ def frozen_split(groups: list[dict], directory: Path) -> dict:
     return split
 
 
-def load_features(group: dict, directory: Path, extractor: FeatureExtractor) -> dict:
+def feature_spec(extractor: FeatureExtractor, interval_sec: float = 1.0) -> dict:
+    return build_feature_spec(MODEL_SHA256, extractor.feature_layer, 1032, interval_sec,
+                              FeatureExtractor.feature, extract_video, FeatureExtractor.__init__, extractor.cv2.__version__)
+
+
+def load_features(group: dict, directory: Path, extractor: FeatureExtractor, interval_sec: float = 1.0) -> dict:
     path = directory / "features" / (group["sha256"] + ".npz")
     path.parent.mkdir(parents=True, exist_ok=True)
+    spec = feature_spec(extractor, interval_sec)
     if path.exists():
-        with np.load(path, allow_pickle=False) as data:
-            return {key: data[key] for key in data.files}
+        try:
+            return read_feature_cache(path, group["sha256"], spec)
+        except (ValueError, OSError, KeyError, EOFError, zipfile.BadZipFile):
+            pass  # Rebuild old/mismatched caches; replace only after successful extraction.
     started = time.monotonic()
-    data = extract_video(Path(group["path"]), extractor, time.monotonic() + 600)
+    if sha(Path(group["path"])) != group["sha256"]:
+        raise ValueError("Source content changed before feature extraction")
+    data = extract_video(Path(group["path"]), extractor, time.monotonic() + 600, interval_sec=interval_sec)
     cached = {"times": data["times"], "features": data["features"],
               "duration_sec": np.array(data["duration_sec"]), "feature_sec": np.array(time.monotonic() - started)}
-    np.savez_compressed(path, **cached)
+    write_feature_cache(path, cached, group["sha256"], spec)
     return cached
 
 
 def run(args):
+    directory = args.model_dir.resolve()
+    directory.mkdir(parents=True, exist_ok=True)
+    require_fresh_training_directory(directory)
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
     from sklearn.metrics import f1_score, balanced_accuracy_score, precision_score, confusion_matrix
 
-    directory = args.model_dir.resolve()
-    directory.mkdir(parents=True, exist_ok=True)
     if sha(directory / MODEL_FILE) != MODEL_SHA256:
         raise ValueError("Run prepare_model.py first; pinned backbone is missing or corrupted")
     groups = read_source(args.data_dir.resolve())
@@ -205,6 +215,7 @@ def run(args):
     config = {"schema_version": version, "model_version": model_version, "backbone_sha256": MODEL_SHA256,
               "classifier_sha256": sha(directory / "baseline.npz"), "feature_layer": extractor.feature_layer,
               "feature_dim": int(x.shape[1]), "threshold": round(chosen[2], 6), "sample_interval_sec": 1,
+              "feature_cache_spec": feature_spec(extractor),
               "seed": SEED, "C": 0.1, "created_utc": datetime.now(timezone.utc).isoformat(),
               "training_groups": len(training), "training_samples": len(y), "validation_groups": len(validation),
               "threshold_policy": "Max validation video F1, then balanced accuracy, then higher threshold; fixed C=0.1",

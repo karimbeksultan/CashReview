@@ -12,7 +12,7 @@ Model readiness means valid artifacts and a working runtime. It does not mean ev
 6. Human-reviewed event intervals/types before claiming semantic action accuracy; binary source labels alone cannot establish it.
 7. Verified applicable rule predicates before legal claims. Regulatory context is not evidence of a breached rule.
 8. Accurate evidence times, decodable real JPEGs, and quality/coverage limitations in the result.
-9. Measured upload-to-result latency including queue wait, bounded five-client load, restart recovery and explicit failures.
+9. Measured upload-to-result latency including queue wait across at least five test videos, restart recovery and explicit failures. Five simultaneous clients are an additional robustness check, not a source-document requirement.
 10. Target-host disconnected operation, TLS and independent-network reachability for remote use.
 
 ## Current evidence

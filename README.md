@@ -32,7 +32,13 @@ npm run build
 cd ..
 ```
 
-Model preparation commands and required artifacts are in the [model card](docs/model_card.md). The running API never downloads weights. After preparing `models/`:
+Model preparation commands and required artifacts are in the [model card](docs/model_card.md). The running API never downloads weights.
+
+Training requires a fresh private artifact directory. Prepared backbone files, a frozen split and bound feature caches may exist, but model files or completed validation/evaluation reports block retraining so historical failures and results remain intact. Reuse the frozen split when comparing candidates; a new directory does not make an exposed test cohort fresh.
+
+New models bind the backbone, preprocessing, sampling interval and runtime versions to their caches. Legacy aggregate reports remain readable; `evaluate.py --repeat` or `--runtime-smoke` requires a newly trained model with matching versioned feature bindings in a separate artifact directory. These tooling changes do not retrain or replace the active detector.
+
+After preparing `models/`:
 
 ```powershell
 ./scripts/start.ps1 -ModelDir models
