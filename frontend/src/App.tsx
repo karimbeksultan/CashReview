@@ -29,6 +29,7 @@ import {
 } from "@phosphor-icons/react";
 import { copy } from "./copy";
 import {
+  automaticDecision,
   InvalidResultError,
   parseHumanReview,
   parseUiJob,
@@ -170,7 +171,11 @@ export default function App() {
   const isResult = demo || job?.status === "done";
   const inProgress = busy || (job?.status === "processing" && !retrievalError);
   const reviewValidation = reviewValidationStatus(job, runtime);
-  const experimental = demo || reviewValidation !== "validated";
+  const disposition = automaticDecision(job);
+  const experimental =
+    demo || reviewValidation !== "validated" || disposition === "needs_review";
+  const requiresHumanReview = !demo && disposition === "needs_review";
+  const noConcern = !demo && disposition === "no_violation";
   const failedBaseline = !demo && reviewValidation === "failed_baseline";
   const runtimeExperimental = runtime?.validation_status !== "validated";
   const runtimeFailedBaseline =
@@ -756,11 +761,13 @@ export default function App() {
               <>
                 {isResult && (
                   <section
-                    className={`verdict-banner ${job?.verdict === "no_violation" && !demo ? "no-concern" : "has-concern"}`}
+                    className={`verdict-banner ${requiresHumanReview ? "review-required" : noConcern ? "no-concern" : "has-concern"}`}
                     aria-label={t.model}
                   >
                     <div className="verdict-icon">
-                      {job?.verdict === "no_violation" && !demo ? (
+                      {requiresHumanReview ? (
+                        <Eye size={38} />
+                      ) : noConcern ? (
                         <ShieldCheck size={38} />
                       ) : (
                         <WarningCircle size={38} />
@@ -776,14 +783,18 @@ export default function App() {
                         )}
                       </div>
                       <h2>
-                        {job?.verdict === "no_violation" && !demo
-                          ? t.noConcern
-                          : t.concern}
+                        {requiresHumanReview
+                          ? t.reviewRequired
+                          : noConcern
+                            ? t.noConcern
+                            : t.concern}
                       </h2>
                       <p>
-                        {job?.verdict === "no_violation" && !demo
-                          ? t.negativeNote
-                          : t.predictionNote}
+                        {requiresHumanReview
+                          ? t.automaticUnavailable
+                          : noConcern
+                            ? t.negativeNote
+                            : t.predictionNote}
                       </p>
                     </div>
                     <div className="verdict-count">
@@ -977,7 +988,11 @@ export default function App() {
                         </div>
                         {findings.length === 0 ? (
                           <div className="empty-state">
-                            <ShieldCheck size={38} />
+                            {requiresHumanReview ? (
+                              <Eye size={38} />
+                            ) : (
+                              <ShieldCheck size={38} />
+                            )}
                             <h3>{t.noEvent}</h3>
                             <p>{t.noEventText}</p>
                           </div>

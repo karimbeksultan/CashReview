@@ -13,6 +13,7 @@ Upload a video, inspect candidate moments in the original recording, and record 
 - English/Russian interface with a large result summary, video player and timestamp navigation.
 - Enlarged evidence frames with an accessible full-size viewer and zoom.
 - Persistent **Confirm concern**, **No concern**, and **Needs more review** decisions with notes.
+- Neutral **Human review required** summary for any result without recorded quality qualification. Candidate moments remain available; this abstention does not change the model's measured accuracy.
 - Local CPU inference, private uploads and actual source-frame JPEGs.
 - Durable SQLite jobs, scoped access, isolated analysis processes and a five-minute deadline.
 - Keyed integration API, reproducible model evaluation, CI and optional Docker packaging.
@@ -67,6 +68,8 @@ curl http://127.0.0.1:8000/api/v1/jobs/JOB_ID \
 ```
 
 Poll once per second. States: `processing`, `done`, `failed`. Completed model verdicts: `violation` or `no_violation`; both require human interpretation. Failures have an error and no verdict. Events contain type, source time, description, context reference and 1–3 actual base64 JPEGs.
+
+The browser shows a binary assessment only when that job's own metadata records both `quality_validated: true` and `validation_status: "validated"`. Otherwise its summary requires human review, regardless of the raw threshold verdict. Legacy API results and evidence stay immutable. This presentation rule is an abstention safeguard, not a classifier improvement or a qualification claim.
 
 | Endpoint | Purpose |
 | --- | --- |

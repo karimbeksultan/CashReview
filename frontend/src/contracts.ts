@@ -17,6 +17,21 @@ export function reviewValidationStatus(
   return typeof status === "string" ? status : undefined;
 }
 
+export function automaticDecision(
+  job: Job | null,
+): "violation" | "no_violation" | "needs_review" | undefined {
+  if (job?.status !== "done") return undefined;
+  // Trust only this result's recorded qualification, never the current service.
+  if (
+    job.metadata?.quality_validated !== true ||
+    job.metadata?.validation_status !== "validated"
+  )
+    return "needs_review";
+  return job.verdict === "violation" || job.verdict === "no_violation"
+    ? job.verdict
+    : "needs_review";
+}
+
 export function limitReviewNotes(value: string): string {
   return Array.from(value).slice(0, 4000).join("");
 }

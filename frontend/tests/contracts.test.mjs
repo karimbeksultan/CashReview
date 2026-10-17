@@ -6,6 +6,7 @@ import {
   InvalidResultError,
   reviewValidationStatus,
   limitReviewNotes,
+  automaticDecision,
 } from "../src/contracts.ts";
 
 const id = "test-job";
@@ -32,6 +33,57 @@ const positive = {
     metadata: { duration_sec: 20 },
   },
 };
+test("unqualified positive and negative results abstain without changing evidence", () => {
+  for (const input of [positive, negative]) {
+    const job = parseUiJob(input, id, "invalid");
+    const before = structuredClone(job);
+    for (const status of [
+      undefined,
+      "failed_baseline",
+      "selection_only",
+      "validated",
+    ]) {
+      for (const quality of [undefined, false, "true"]) {
+        assert.equal(
+          automaticDecision({
+            ...job,
+            metadata: { validation_status: status, quality_validated: quality },
+          }),
+          "needs_review",
+        );
+      }
+    }
+    assert.deepEqual(job, before);
+  }
+});
+test("automatic assessment requires both qualification fields on its own result", () => {
+  for (const input of [positive, negative]) {
+    const job = parseUiJob(input, id, "invalid");
+    assert.equal(
+      automaticDecision({
+        ...job,
+        metadata: { quality_validated: true, validation_status: "validated" },
+      }),
+      job.verdict,
+    );
+    assert.equal(
+      automaticDecision({
+        ...job,
+        metadata: {
+          quality_validated: true,
+          validation_status: "selection_only",
+        },
+      }),
+      "needs_review",
+    );
+  }
+  assert.equal(automaticDecision(null), undefined);
+  assert.equal(
+    automaticDecision({ job_id: id, status: "processing" }),
+    undefined,
+  );
+  assert.equal(automaticDecision({ job_id: id, status: "failed" }), undefined);
+});
 test("valid completed results and processing/failure retain their distinct states", () => {
   assert.equal(parseUiJob(negative, id, "invalid").verdict, "no_violation");
   assert.equal(

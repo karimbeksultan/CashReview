@@ -556,6 +556,20 @@ input[type="range"] {
 .no-concern .verdict-icon {
   color: var(--success);
 }
+.verdict-banner.review-required {
+  background: #f6f4f8;
+  border-color: #ccc3d6;
+}
+.verdict-banner.review-required .verdict-icon,
+.verdict-banner.review-required h2,
+.verdict-banner.review-required .verdict-label,
+.verdict-banner.review-required p,
+.verdict-banner.review-required .verdict-count {
+  color: #493953;
+}
+.review-required .verdict-count {
+  border-color: #ccc3d6;
+}
 .verdict-label {
   display: flex;
   align-items: center;

@@ -42,6 +42,9 @@ export const copy = {
     tabHint: "Keep this tab open to retain access to this review.",
     concern: "Possible concerns found",
     noConcern: "No supported concern found",
+    reviewRequired: "Human review required",
+    automaticUnavailable:
+      "This model has not passed the accuracy check. Candidate moments are suggestions to inspect; no automatic decision is available.",
     model: "Model result",
     experimental: "Experimental",
     failedQualityTitle: "Automatic detection failed the initial accuracy check",
@@ -207,6 +210,9 @@ export const copy = {
     tabHint: "Не закрывайте вкладку, чтобы сохранить доступ к проверке.",
     concern: "Обнаружены признаки возможных нарушений",
     noConcern: "Нарушение не обнаружено",
+    reviewRequired: "Требуется проверка человеком",
+    automaticUnavailable:
+      "Модель не прошла проверку точности. Выделенные моменты — подсказки для просмотра; автоматическое решение недоступно.",
     model: "Результат модели",
     experimental: "Экспериментальная модель",
     failedQualityTitle:
