@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "name": "Cash Review",
+  "palette": {
+    "primary": "#A31551",
+    "plum": "#64123B",
+    "ink": "#172B36",
+    "white": "#FFFFFF"
+  },
+  "mark": {
+    "viewBox": [
+      0,
+      0,
+      32,
+      34
+    ],
+    "rectangles": [
+      {
+        "x": 0,
+        "y": 4.5,
+        "width": 8,
+        "height": 25,
+        "rx": 3
+      },
+      {
+        "x": 12,
+        "y": 0,
+        "width": 8,
+        "height": 34,
+        "rx": 3
+      },
+      {
+        "x": 24,
+        "y": 8,
+        "width": 8,
+        "height": 18,
+        "rx": 3
+      }
+    ]
+  },
+  "wordmark": {
+    "viewBox": [
+      0,
+      0,
+      416,
+      96
+    ],
+    "mark_transform": {
+      "translate": [
+        16,
+        14
+      ],
+      "scale": 2
+    },
+    "text": {
+      "value": "Cash Review",
+      "x": 104,
+      "y": 65,
+      "font_family": [
+        "Arial",
+        "Manrope",
+        "sans-serif"
+      ],
+      "font_size": 48,
+      "font_weight": 700,
+      "letter_spacing": -1.4
+    },
+    "light": {
+      "mark": "#A31551",
+      "text": "#172B36",
+      "background": "transparent; use on light surfaces"
+    },
+    "dark": {
+      "mark": "#FFFFFF",
+      "text": "#FFFFFF",
+      "background": "transparent; use on dark surfaces"
+    }
+  },
+  "favicon": {
+    "viewBox": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "background": "#64123B",
+    "corner_radius": 14,
+    "mark": "#FFFFFF",
+    "mark_translate": [
+      16,
+      15
+    ]
+  },
+  "assets": {
+    "mark": "cash-review-mark.svg",
+    "mark_inverse": "cash-review-mark-inverse.svg",
+    "wordmark_light": "cash-review-wordmark.svg",
+    "wordmark_dark": "cash-review-wordmark-inverse.svg",
+    "favicon": "/favicon.svg"
+  },
+  "note": "The original three-bar identity is preserved. Recreate these rectangles natively for slides; do not stretch the mark or substitute other geometry. Assets contain no embedded external fonts, scripts or external references."
+}

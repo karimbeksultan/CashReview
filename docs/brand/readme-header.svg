@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="224" viewBox="0 0 1200 224" role="img" aria-label="Cash Review">
+  <title>Cash Review</title>
+  <rect width="1200" height="224" rx="14" fill="#64123B"/>
+  <g transform="translate(184 16) scale(2)">
+    <g transform="translate(16 14) scale(2)" fill="#FFFFFF">
+      <rect x="0" y="4.5" width="8" height="25" rx="3"/>
+      <rect x="12" y="0" width="8" height="34" rx="3"/>
+      <rect x="24" y="8" width="8" height="18" rx="3"/>
+    </g>
+    <text x="104" y="65" fill="#FFFFFF" font-family="Arial, Manrope, sans-serif" font-size="48" font-weight="700" letter-spacing="-1.4">Cash Review</text>
+  </g>
+</svg>

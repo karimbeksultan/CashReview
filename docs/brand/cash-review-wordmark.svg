@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="416" height="96" viewBox="0 0 416 96" role="img" aria-label="Cash Review">
+  <title>Cash Review</title>
+  <g transform="translate(16 14) scale(2)" fill="#A31551">
+    <rect x="0" y="4.5" width="8" height="25" rx="3"/>
+    <rect x="12" y="0" width="8" height="34" rx="3"/>
+    <rect x="24" y="8" width="8" height="18" rx="3"/>
+  </g>
+  <text x="104" y="65" fill="#172B36" font-family="Arial, Manrope, sans-serif" font-size="48" font-weight="700" letter-spacing="-1.4">Cash Review</text>
+</svg>
