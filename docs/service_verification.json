@@ -7,7 +7,7 @@
   "results": [
     {
       "source_class": "negative",
-      "client": "jury",
+      "client": "integration",
       "duration_sec": 71.6,
       "upload_to_result_sec": 16.485,
       "status": "done",
@@ -21,7 +21,7 @@
     },
     {
       "source_class": "positive",
-      "client": "jury",
+      "client": "integration",
       "duration_sec": 25.9333,
       "upload_to_result_sec": 5.812,
       "status": "done",

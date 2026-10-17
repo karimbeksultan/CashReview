@@ -93,7 +93,7 @@ def run(args):
               "feature_extraction_sec_test_median": float(np.median([r["feature_sec"] for r in records])) if records else None,
               "hardware": {"platform": platform.platform(), "processor": platform.processor(), "logical_cpus": os.cpu_count(),
                            "opencv": cv2.__version__, "numpy": np.__version__, "cv_threads": 2},
-              "competition_ready": False,
+              "quality_validated": False,
               "limitations": ["Only eight unique content groups in the holdout; wide statistical uncertainty.",
                               "Same source camera/setting may correlate across splits; near duplicates/session grouping not reviewed.",
                               "Frozen feature extraction on test pixels is inference; scaler/classifier fitting and threshold selection exclude test groups.",

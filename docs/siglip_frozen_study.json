@@ -1,0 +1,264 @@
+{
+  "study": "SigLIP2 frozen semantic features, six fixed linear candidates",
+  "status": "rejected_selection_gate_failed",
+  "deployed": false,
+  "encoder": {
+    "repository": "google/siglip2-base-patch16-224",
+    "revision": "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
+    "combined_sha256": "612923381c76ec5a9bed335d1c48827e3f2e506ac31b044b63b2031fadee6a0b",
+    "license": "apache-2.0"
+  },
+  "hardware": {
+    "cpu": "Intel(R) Core(TM) i5-10310U CPU @ 1.70GHz",
+    "os_version": "10.0.26200",
+    "visible_ram_bytes": 16920174592,
+    "logical_processors": 8,
+    "os": "\u041c\u0430\u0439\u043a\u0440\u043e\u0441\u043e\u0444\u0442 Windows 11 Pro",
+    "study_threads": 2,
+    "physical_cores": 4,
+    "device": "CPU"
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "torch": "2.6.0+cpu",
+    "transformers": "4.57.6",
+    "scikit_learn": "1.9.1",
+    "threads": 2,
+    "dtype": "float32",
+    "local_only": true,
+    "remote_inference": false
+  },
+  "data_scope": {
+    "original_videos": 42,
+    "unique_content_groups": 40,
+    "training_groups": 24,
+    "reused_selection_groups": 8,
+    "test_groups_processed": 0,
+    "study_completed_groups": 32,
+    "independent_holdout_evaluated": false
+  },
+  "method": "Whole clips sampled at 1 fps on the source timeline, frozen 768D L2-normalized vision features and twelve predeclared generic text similarities. Exactly three representations times C in [0.01,0.1]. Four-fold training-group CV with fold-local StandardScaler and linear classifier fitting. Sparse positive anchors supervise only the weak-window candidate; unannotated positive moments are never negatives. No case descriptions generated.",
+  "candidates": [
+    {
+      "kind": "bag_full",
+      "C": 0.01,
+      "dimensions": 4644,
+      "oof_partial_auc_fpr025": 0.6443556443556444,
+      "oof_roc_auc": 0.6293706293706294,
+      "at_threshold_0_5": {
+        "tn": 7,
+        "fp": 4,
+        "fn": 7,
+        "tp": 6,
+        "recall": 0.46153846153846156,
+        "specificity": 0.6363636363636364,
+        "balanced_accuracy": 0.548951048951049,
+        "accuracy": 0.5416666666666666,
+        "precision": 0.6
+      }
+    },
+    {
+      "kind": "bag_full",
+      "C": 0.1,
+      "dimensions": 4644,
+      "oof_partial_auc_fpr025": 0.6123876123876124,
+      "oof_roc_auc": 0.6153846153846154,
+      "at_threshold_0_5": {
+        "tn": 7,
+        "fp": 4,
+        "fn": 6,
+        "tp": 7,
+        "recall": 0.5384615384615384,
+        "specificity": 0.6363636363636364,
+        "balanced_accuracy": 0.5874125874125874,
+        "accuracy": 0.5833333333333334,
+        "precision": 0.6363636363636364
+      }
+    },
+    {
+      "kind": "bag_semantic",
+      "C": 0.01,
+      "dimensions": 36,
+      "oof_partial_auc_fpr025": 0.6003996003996004,
+      "oof_roc_auc": 0.5454545454545455,
+      "at_threshold_0_5": {
+        "tn": 5,
+        "fp": 6,
+        "fn": 7,
+        "tp": 6,
+        "recall": 0.46153846153846156,
+        "specificity": 0.45454545454545453,
+        "balanced_accuracy": 0.458041958041958,
+        "accuracy": 0.4583333333333333,
+        "precision": 0.5
+      }
+    },
+    {
+      "kind": "bag_semantic",
+      "C": 0.1,
+      "dimensions": 36,
+      "oof_partial_auc_fpr025": 0.6563436563436564,
+      "oof_roc_auc": 0.6643356643356644,
+      "at_threshold_0_5": {
+        "tn": 6,
+        "fp": 5,
+        "fn": 4,
+        "tp": 9,
+        "recall": 0.6923076923076923,
+        "specificity": 0.5454545454545454,
+        "balanced_accuracy": 0.6188811188811189,
+        "accuracy": 0.625,
+        "precision": 0.6428571428571429
+      }
+    },
+    {
+      "kind": "weak_window_full",
+      "C": 0.01,
+      "dimensions": 4644,
+      "oof_partial_auc_fpr025": 0.5724275724275725,
+      "oof_roc_auc": 0.5314685314685315,
+      "at_threshold_0_5": {
+        "tn": 4,
+        "fp": 7,
+        "fn": 6,
+        "tp": 7,
+        "recall": 0.5384615384615384,
+        "specificity": 0.36363636363636365,
+        "balanced_accuracy": 0.45104895104895104,
+        "accuracy": 0.4583333333333333,
+        "precision": 0.5
+      }
+    },
+    {
+      "kind": "weak_window_full",
+      "C": 0.1,
+      "dimensions": 4644,
+      "oof_partial_auc_fpr025": 0.6163836163836164,
+      "oof_roc_auc": 0.5454545454545454,
+      "at_threshold_0_5": {
+        "tn": 5,
+        "fp": 6,
+        "fn": 7,
+        "tp": 6,
+        "recall": 0.46153846153846156,
+        "specificity": 0.45454545454545453,
+        "balanced_accuracy": 0.458041958041958,
+        "accuracy": 0.4583333333333333,
+        "precision": 0.5
+      }
+    }
+  ],
+  "selected": {
+    "representation": "bag_semantic",
+    "dimensions": 36,
+    "C": 0.1,
+    "threshold": 0.5510047078132629,
+    "feature_order": "mean of 12 cosines, population std of 12 cosines, maximum of 12 cosines",
+    "training_oof_roc_auc": 0.6643356643356644,
+    "training_oof_standardized_partial_auc_fpr025": 0.6563436563436564,
+    "training_oof_operating_metrics": {
+      "tn": 9,
+      "fp": 2,
+      "fn": 6,
+      "tp": 7,
+      "recall": 0.5384615384615384,
+      "specificity": 0.8181818181818182,
+      "balanced_accuracy": 0.6783216783216783,
+      "accuracy": 0.6666666666666666,
+      "precision": 0.7777777777777778
+    }
+  },
+  "frozen_gate": {
+    "training": "ROC-AUC>0.55, standardized partialAUC(FPR<=0.25)>0.5, specificity>=0.75, recall>=0.5, balanced_accuracy>0.5; threshold chosen using training OOF only",
+    "selection": "specificity>=0.75, recall>=0.5, balanced_accuracy>0.5; all inputs complete; no threshold/candidate changes",
+    "result": "Failed: selection specificity0.5<0.75 and balanced_accuracy0.5 is not>0.5"
+  },
+  "selection_metrics": {
+    "tn": 2,
+    "fp": 2,
+    "fn": 2,
+    "tp": 2,
+    "recall": 0.5,
+    "specificity": 0.5,
+    "balanced_accuracy": 0.5,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "f1": 0.5
+  },
+  "confidence_intervals": {
+    "specificity": {
+      "successes": 2,
+      "trials": 4,
+      "level": 0.95,
+      "method": "Clopper-Pearson exact equal-tailed binomial",
+      "lower": 0.06758598648854294,
+      "upper": 0.932414013511457
+    },
+    "recall": {
+      "successes": 2,
+      "trials": 4,
+      "level": 0.95,
+      "method": "Clopper-Pearson exact equal-tailed binomial",
+      "lower": 0.06758598648854294,
+      "upper": 0.932414013511457
+    }
+  },
+  "completion_and_feature_timing": {
+    "train": {
+      "expected_groups": 24,
+      "attempted_groups": 24,
+      "completed_groups": 24,
+      "failed_groups": 0,
+      "source_samples": 736,
+      "warm_feature_seconds_total": 558.4409193000174,
+      "warm_feature_seconds_max": 101.31008290001773,
+      "peak_working_set_bytes": 806219776
+    },
+    "validation": {
+      "expected_groups": 8,
+      "attempted_groups": 8,
+      "completed_groups": 8,
+      "failed_groups": 0,
+      "source_samples": 295,
+      "warm_feature_seconds_total": 285.5045112000371,
+      "warm_feature_seconds_max": 73.14321869998821,
+      "peak_working_set_bytes": 800784384
+    }
+  },
+  "source_samples_total": 1031,
+  "synthetic_timing": {
+    "fixed_caption_vectors": 12,
+    "text_process_wall_seconds": 119.13004860002548,
+    "text_peak_working_set_bytes": 771928064,
+    "vision_synthetic_frames": 145,
+    "vision_process_wall_seconds": 150.29433400000562,
+    "vision_model_work_seconds": 111.24078110000119,
+    "vision_peak_working_set_bytes": 764186624
+  },
+  "artifact_sha256": {
+    "classifier.npz": "8dcf1be75fd17fe3d59890f3e67c0bf20087521621a7f7046675965ab69af2f7",
+    "fixed_caption_embeddings.npy": "25e75742b9b41851c1d5a26e71aad4a5f02ba4866384f1e521edb771aad26712",
+    "study_policy.json": "b068a67d9ada8438814085eb2da7bca0fc0afe9333ae0a712b1b04103ecadf3f",
+    "attribution_policy.json": "946ae32977695dca83cf446c9106ded670187c8bbd1620f071011e38f0e196b7",
+    "config.json": "fe8b5fe6d5734360678fd71c11c21e1ea3364bd8598d34295d9206335973ffd7",
+    "preprocessor_config.json": "9b36b57ebaf20f09bf4c22100ccc21877ea6bfe5aead0c00c59f8af8ccefacfc",
+    "vision_tower/model.safetensors": "47b2fedf5dffe18405c5b6d9e9c6147e4648046d1ddff82364f330abf0a5bf2d",
+    "train_selection.json": "9548b4bb8c22d901804f058d0c48940e042e0892455faa7837a5b73f32c86103"
+  },
+  "limitations": [
+    "The eight selection groups have been reused across development studies; this is not independent holdout evidence. The previously exposed eight test groups were excluded from this study.",
+    "Nominal exact binomial confidence intervals do not account for reused selection, model selection, shared actors/scenes, or other dependence.",
+    "Feature timings exclude full API upload/queue/evidence/response work and do not establish full cold service latency, public reachability or outbound-blocked operation.",
+    "No action taxonomy, legal applicability, identity, or event localization is validated. The frozen attribution policy is a generic review-context heuristic, not an action claim.",
+    "The rejected candidate was not integrated, exported for deployment, or used to replace the service model. No post-result threshold or candidate retuning was performed."
+  ],
+  "references": [
+    "https://huggingface.co/google/siglip2-base-patch16-224",
+    "https://huggingface.co/docs/transformers/model_doc/siglip2",
+    "https://arxiv.org/abs/2502.14786",
+    "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedGroupKFold.html",
+    "https://doi.org/10.48550/arXiv.2609.00065"
+  ],
+  "workflow_reference": "Kassis, Agarwal, He, Patel and Brueckner (2026), Scientific Agent Skills: A Library of Procedural Knowledge for Research Agents. The scikit-learn skill informed fold-local pipeline and grouping safeguards; it is not model-performance evidence.",
+  "quality_validated": false
+}

@@ -10,9 +10,11 @@ private/
 *.mov
 *.MOV
 *.mp4
+*.MP4
 *.xlsx
 *.onnx
 *.npz
+*.npy
 *.gguf
 *.safetensors
 *.pth
@@ -30,6 +32,8 @@ frontend/dist/
 frontend/*.tsbuildinfo
 .venv/
 venv/
+.training-env/
+backend/research/siglip2/contract-*/
 __pycache__/
 *.py[cod]
 .pytest_cache/

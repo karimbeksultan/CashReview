@@ -1,0 +1,10 @@
+Public pretrained model: google/siglip2-base-patch16-224
+Pinned revision: 75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2
+Source/model card: https://huggingface.co/google/siglip2-base-patch16-224/blob/75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2/README.md
+The pinned model card declares Apache-2.0. Retain that verified README and
+the accompanying canonical Apache2 license with these source/derived weights.
+The recorded upstream file inventory had no separate NOTICE or LICENSE file.
+The vision tower copies exact selected official tensors without rounding.
+A learned candidate is a separate derivative with its own digest.
+Framework/runtime licenses apply separately and do not license these weights.
+This license does not grant rights to input footage or establish model quality.

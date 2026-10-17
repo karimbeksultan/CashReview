@@ -208,7 +208,7 @@ def run(args):
               "seed": SEED, "C": 0.1, "created_utc": datetime.now(timezone.utc).isoformat(),
               "training_groups": len(training), "training_samples": len(y), "validation_groups": len(validation),
               "threshold_policy": "Max validation video F1, then balanced accuracy, then higher threshold; fixed C=0.1",
-              "split_fingerprint": split["source_fingerprint"], "competition_ready": False,
+              "split_fingerprint": split["source_fingerprint"], "quality_validated": False,
               "model_kind": "experimental_visual_review_baseline", "score_calibrated": False, **gate_config}
     (directory / "baseline.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
     print(json.dumps({"trained": True, **config}), flush=True)

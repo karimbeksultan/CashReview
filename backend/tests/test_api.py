@@ -26,7 +26,7 @@ def settings(tmp_path: Path) -> Settings:
 
 @pytest.fixture(autouse=True)
 def detector(monkeypatch):
-    engine = SimpleNamespace(readiness=lambda: {"ready": True, "reasons": [], "competition_ready": False},
+    engine = SimpleNamespace(readiness=lambda: {"ready": True, "reasons": [], "quality_validated": False},
                              analyze_video=lambda *args: {"verdict": "no_violation", "violations": [],
                                                           "metadata": {"duration_sec": 10.0}})
     monkeypatch.setattr(importlib.import_module("cash_review.worker"), "get_engine", lambda: engine)
@@ -41,7 +41,7 @@ def upload(client: TestClient, ui: bool = True, body: bytes = MOV, filename: str
                        headers={} if ui else {"X-API-Key": KEY})
 
 
-def test_exact_jury_contract_requires_key_and_never_returns_ui_token(settings):
+def test_exact_integration_contract_requires_key_and_never_returns_ui_token(settings):
     with TestClient(create_app(settings)) as client:
         assert client.post("/api/v1/analyze", files={"file": ("sample.mov", MOV)}).status_code == 401
         assert client.get("/api/v1/jobs/" + "a" * 32).status_code == 401
@@ -187,7 +187,7 @@ def test_multipart_parsing_consumes_deadline_and_slow_upload_times_out(settings)
     assert sent[0]["status"] == 408
 
 
-def test_human_review_persists_separately_from_immutable_model_and_jury(settings):
+def test_human_review_persists_separately_from_immutable_model_and_integration(settings):
     model_result = {"verdict": "violation", "violations": [{"type": "visual_review_signal"}],
                     "metadata": {"model_version": "test-only"}}
     with TestClient(create_app(settings)) as client:
@@ -213,14 +213,14 @@ def test_human_review_persists_separately_from_immutable_model_and_jury(settings
         assert changed.status_code == 200
         assert client.get(path, headers=auth).json()["human_review"]["decision"] == "needs_review"
 
-        jury = upload(client, ui=False).json()
+        integration = upload(client, ui=False).json()
         claim = store.claim(30)
-        assert store.finish(jury["job_id"], claim["claim_token"], model_result)
-        # Even a separately stored review can never change or enter jury output.
-        store.save_review(jury["job_id"], "no_violation", "Private human judgment")
-        jury_response = client.get(f"/api/v1/jobs/{jury['job_id']}", headers={"X-API-Key": KEY}).json()
-        assert jury_response["verdict"] == "violation" and "human_review" not in jury_response
-        assert "sponsor_reference" not in jury_response
+        assert store.finish(integration["job_id"], claim["claim_token"], model_result)
+        # Even a separately stored review can never change or enter integration output.
+        store.save_review(integration["job_id"], "no_violation", "Private human judgment")
+        integration_response = client.get(f"/api/v1/jobs/{integration['job_id']}", headers={"X-API-Key": KEY}).json()
+        assert integration_response["verdict"] == "violation" and "human_review" not in integration_response
+        assert "sponsor_reference" not in integration_response
 
 
 def test_review_requires_same_job_token_completed_analysis_and_allowed_origin(settings):

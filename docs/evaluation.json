@@ -62,7 +62,6 @@
     "numpy": "2.5.4",
     "cv_threads": 2
   },
-  "competition_ready": false,
   "limitations": [
     "Only eight unique content groups in the holdout; wide statistical uncertainty.",
     "Same source camera/setting may correlate across splits; near duplicates/session grouping not reviewed.",
@@ -104,5 +103,6 @@
     }
   ],
   "artifact_version_note": "Exact private artifact version is retained in local model provenance; no source or artifact hashes are exported.",
-  "test_exposure_note": "First model evaluated on this frozen partition; the failed result was exposed before the rejected v2 design. Any later reused-test results are exploratory."
+  "test_exposure_note": "First model evaluated on this frozen partition; the failed result was exposed before the rejected v2 design. Any later reused-test results are exploratory.",
+  "quality_validated": false
 }

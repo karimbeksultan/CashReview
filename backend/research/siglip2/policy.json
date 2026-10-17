@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "status": "experimental_research_original_candidate_rejected_portable_heavy_rerun_not_performed",
+  "seed": 26017,
+  "model_repository": "google/siglip2-base-patch16-224",
+  "model_revision": "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
+  "vision_sha256": "47b2fedf5dffe18405c5b6d9e9c6147e4648046d1ddff82364f330abf0a5bf2d",
+  "architecture": "One candidate only: frozen first 11 of 12 vision blocks; train final block and a new binary linear head; frozen post-layernorm; mean token pooling and L2 normalization; no text tower",
+  "training": {
+    "epochs": 3,
+    "backbone_learning_rate": 1e-05,
+    "head_learning_rate": 0.001,
+    "optimizer": "AdamW",
+    "weight_decay": 0.01,
+    "gradient_clip": 1.0,
+    "microbatch": 2,
+    "group_weighting": "One optimizer step per group, mean sample loss, balanced class weights computed from fit groups only",
+    "maximum_fit_frames_per_group": 12,
+    "positive_labels": "Only sampled frames within 2 seconds of supplied training annotation; unannotated positive frames are excluded from fitting",
+    "negative_labels": "Only genuinely normal training groups; up to 12 uniform samples per group",
+    "augmentation": "One cached brightness/contrast variant per fitting frame, each factor independently in [0.95,1.05]; original or variant alternates by epoch; no flip/crop/geometry alteration"
+  },
+  "inference": {
+    "sampling": "1 fps at presentation timestamps for every group; no labels, annotation timestamps, names or hashes enter predictor",
+    "maximum_samples": 146,
+    "video_score": "Mean of highest three frame probabilities, or all frames if fewer than three",
+    "localization": "Only after video score passes frozen threshold: frame local maxima at or above that same threshold, greedy score order with8second separation, at most3, then chronological order. Generic visual_review_signal only. Keep raw PTS/origin mapping for later native evidence seeking verification; no action/legal category inferred",
+    "prefix_cache": "Frozen first 11 blocks, float32 NPY per group; augmentation cache only for train fit frames; group identifiers are storage keys, never features"
+  },
+  "selection": {
+    "groups": "Explicit immutable SHA256 exact-content split; group counts derive from data, with test excluded from all processing",
+    "cross_validation": "Four stratified folds of unique training groups; a complete new final block/head fit in every fold; no heldout-group gradient updates",
+    "threshold": "Training-group out-of-fold predictions only; require recall>=0.5, specificity>=0.5, BA>0.5, OOF ROC-AUC>0.55 and standardized partial AUC at FPR<=0.25>0.5; maximize balanced accuracy, then specificity, then recall; no epoch, architecture or learning-rate selection on validation",
+    "validation": "One frozen choice only after OOF gate; same annotation-independent 1fps sampler; no validation timestamps used for fitting, feature selection or threshold selection",
+    "promotion_gate": "Validation specificity>=0.75, recall>=0.5, balanced accuracy>0.5 and all groups successful; separately require full cold engine processing<300 seconds. Test groups are excluded by this workflow; the original baseline previously exposed them. No automatic application integration"
+  },
+  "resources": {
+    "threads": 2,
+    "per_group_decode_seconds": 300,
+    "training_wall_budget_seconds": 3600,
+    "original_source_synthetic_probe_peak_working_set_bytes": 974417920,
+    "original_source_four_fold_cv_peak_working_set_bytes": 567128064,
+    "estimated_cache_disk_mb": "Prefix float32 storage scales as sampled_frames*196*768*4 plus at most12 augmented states per train group",
+    "timing": "Original fixed source experiment: training-prefix caching583.249seconds excluding cold load; fourfoldCV410.033seconds including imports. Portable heavy rerun not performed. Four freshCV fits are required; final fit is permitted only after the training gate passes. These measurements are not portable runtime guarantees"
+  },
+  "limits": [
+    "No cloud image upload or network inference",
+    "No app source changes or deployment until quality gate passes",
+    "A small same-scene development cohort may overfit operator or scene appearance; no identity objective or identity head is trained",
+    "Single-frame vision fine-tuning does not establish a legal violation or an action category",
+    "This family is another development experiment after earlier validation failures; the existing test groups are excluded from this study but were exposed by the original baseline, so a fresh independent holdout is necessary for final assessment"
+  ],
+  "portable_origin": {
+    "source_plan_sha256": "297f34f418c10b53485b9468a52843ab361c7ca025d7ad55e2e6d1e3a82ea31e",
+    "source_workflow_sha256_at_copy": "04cc2f18c8bc958fdeda0435157464880a992db71a72326a8796354e4ce0d638",
+    "change_scope": "Path portability, dynamic partition sizes, verified local artifacts and numeric-cache validation; numerical fit/scoring/preprocessing policy unchanged",
+    "candidate_status": "rejected_train_gate; no candidate or validation processing"
+  }
+}

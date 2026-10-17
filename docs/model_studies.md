@@ -2,7 +2,7 @@
 
 The first baseline predicted every original test clip as positive, including all four normal clips. That is a detection failure. Replacing it requires evidence of fewer false alarms with nontrivial recall, rather than an all-negative predictor or a more impressive model name.
 
-The following private local studies used 24 unique training groups and the same eight development groups. Candidate selection used training-only cross-validation. These are exploratory development results: repeated development-set use and a shared source camera limit their credibility. None provides a fresh independent test.
+The following private local studies used 24 unique training groups. Development checks, where performed, reused the same eight groups. A failed training gate can stop a study before that check. Each report preserves its selection procedure. These are exploratory development results: repeated development-set use and a shared source camera limit their credibility. None provides a fresh independent test.
 
 | Representation / selected method | Development specificity | Development recall | Balanced accuracy | Outcome |
 | --- | --- | --- | --- | --- |
@@ -10,8 +10,16 @@ The following private local studies used 24 unique training groups and the same 
 | Correct penultimate MobileNet embeddings with deltas / RBF SVM | 0.25 | 0.00 | 0.125 | Rejected |
 | Appearance/motion/dynamics comparison / random forest | 0.50 | 0.50 | 0.500 | Rejected |
 | R3D18 spatiotemporal features / normal-only anomaly model | No threshold met the joint gate | No threshold met the joint gate | — | Rejected |
+| SigLIP2 semantic features / grouped linear classifier | 0.50 | 0.50 | 0.500 | Rejected |
+| SigLIP2 supervised final-block fine-tuning | Not evaluated | Not evaluated | — | Rejected by training gate |
 
 For R3D18, the best unconstrained development threshold had specificity 0.25 and recall 1.00. It still falsely flagged three of four normal clips and was not promoted. Seven predefined temporal candidates had near-chance training cross-validation discrimination at low false-positive rates. Its longest-clip feature extraction took 74.844 seconds for 142.533 seconds of footage, with peak resident memory 319.7 MiB; this excludes the full service path.
+
+SigLIP2 used a verified official Apache 2.0 checkpoint locally, sampled the whole clip at one second, and selected among six predefined candidates using four-fold training-group CV. The selected semantic bag had training OOF specificity 0.818 and recall 0.538. Its frozen threshold then produced `[[2,2],[2,2]]` on the eight reused development groups and failed the joint gate. Specificity and recall each had only four trials, with nominal exact 95% intervals of 0.068–0.932. No alternate threshold was substituted. All 32 training/development groups completed across 1,031 sampled frames; no runtime model changed. See the [detailed aggregate study](siglip_frozen_study.md) and [machine-readable record](siglip_frozen_study.json).
+
+A separate fixed recipe fine-tuned the final SigLIP2 vision block and a binary head, with 7,088,641 trainable parameters. Four fresh grouped fits scored all 24 training groups. OOF ROC-AUC was 0.454545, below the required 0.55, and no threshold satisfied the joint recall/specificity rule. The training gate stopped the workflow before final fitting or validation. No candidate was deployed or exported. See the [fine-tuning report](siglip_finetune_study.md) and [aggregate record](siglip_finetune_study.json).
+
+The [portable SigLIP2 research workflow](../backend/research/siglip2/README.md) preserves the fixed fitting and scoring method with explicit local paths, verified assets and media-free contract checks. Its original candidate was rejected, and the portable heavy workflow has not been rerun. It is experimental research and does not connect to the application engine.
 
 The [aggregate study record](model_studies.json) contains the measured counts and selection details. Features, source identities, semantic outputs, weights and clip-level predictions remain private. The original eight test groups were not evaluated by these studies; their earlier V1 exposure remains documented.
 

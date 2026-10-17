@@ -16,6 +16,10 @@ jobs:
           cache-dependency-path: backend/requirements.lock.txt
       - run: python -m pip install -r backend/requirements.lock.txt
       - run: python -m pytest backend/tests -q
+      - name: Check experimental research contracts without models or media
+        run: |
+          python backend/research/siglip2/check_contract.py
+          python -m compileall -q backend/research/siglip2
   frontend:
     runs-on: ubuntu-latest
     defaults:

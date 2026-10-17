@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "title": "Fixed SigLIP2 final-block fine-tuning experiment",
+  "status": "rejected_by_training_gate",
+  "experimental": true,
+  "ready_for_app": false,
+  "method": {
+    "model_repository": "google/siglip2-base-patch16-224",
+    "model_revision": "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
+    "vision_only_pretrained_sha256": "47b2fedf5dffe18405c5b6d9e9c6147e4648046d1ddff82364f330abf0a5bf2d",
+    "trainable_parameters": 7088641,
+    "backbone": "Freeze embeddings and the first 11 vision blocks; train the final block; freeze official post-layernorm",
+    "head": "Mean of 196 token states, L2 normalization, new 768-to-1 linear head and sigmoid; original MAP pooler excluded",
+    "epochs": 3,
+    "backbone_learning_rate": 1e-05,
+    "head_learning_rate": 0.001,
+    "weight_decay": 0.01,
+    "optimizer": "AdamW",
+    "microbatch": 2,
+    "gradient_clip": 1.0,
+    "loss": "Class-balanced group mean BCE, one optimizer step per group; fit class weights only on fitting groups",
+    "fit_samples": "Positive frames only within 2 seconds of training annotations; normal groups supply negatives; at most 12 fitting frames per group, with fixed mild brightness/contrast variants",
+    "inference": "Sample the whole clip at 1 fps without annotations; average the three highest frame probabilities",
+    "runtime": "Offline local CPU, two threads, float32"
+  },
+  "data": {
+    "training_groups": 24,
+    "training_class_counts": {
+      "positive": 13,
+      "negative": 11
+    },
+    "cross_validation_folds": 4,
+    "oof_groups_scored": 24,
+    "validation_groups_processed": 0,
+    "test_groups_processed_by_this_study": 0,
+    "existing_test_previously_exposed_by_original_baseline": true,
+    "fresh_independent_holdout_required": true,
+    "source_media_uploaded": false,
+    "case_ids_paths_or_predictions_in_this_report": false
+  },
+  "selection": {
+    "operating_point_rule": "Require recall>=0.5,specificity>=0.5,BA>0.5; maximizeBA,then specificity,thenrecall,thenhigherthreshold, trainingOOFonly",
+    "eligible_operating_point_found": false,
+    "selected_threshold": null,
+    "selected_confusion_counts": null,
+    "oof_roc_auc": 0.4545454545454546,
+    "oof_standardized_partial_auc_fpr025": 0.5164835164835165,
+    "chance_gate": {
+      "roc_auc_strictly_greater_than": 0.55,
+      "partial_auc_strictly_greater_than": 0.5,
+      "eligible_operating_point_required": true,
+      "passed": false
+    },
+    "rejection_reasons": [
+      "No threshold satisfies the frozen operating-point rule",
+      "OOF ROC-AUC is below required0.55"
+    ],
+    "diagnostic_conventional_0_5": {
+      "threshold": 0.5,
+      "chosen_by_model_selection": false,
+      "used_for_deployment": false,
+      "tp": 4,
+      "tn": 5,
+      "fp": 6,
+      "fn": 9,
+      "recall": 0.3076923076923077,
+      "specificity": 0.45454545454545453,
+      "balanced_accuracy": 0.38111888111888115
+    }
+  },
+  "resources": {
+    "training_cache": {
+      "completed_training_groups": 24,
+      "dense_frames": 736,
+      "fit_frames": 193,
+      "extraction_seconds": 583.249,
+      "longest_group_seconds": 98.811,
+      "validation_groups_decoded_by_this_study": 0,
+      "test_groups_decoded_by_this_study": 0,
+      "cold_start_included": false
+    },
+    "synthetic_probe": {
+      "synthetic_only": true,
+      "case_inputs_processed": 0,
+      "microbatch": 2,
+      "prefix_suffix_max_absolute_error": 0.0,
+      "prefix_suffix_parity_passed": true,
+      "finite_nonzero_gradients": true,
+      "block_finite_nonzero_gradients": true,
+      "head_finite_nonzero_gradients": true,
+      "synthetic_proof_weight_decay": 0,
+      "last_block_max_weight_change": 3.007054328918457e-05,
+      "head_max_weight_change": 3.005005419254303e-05,
+      "training_step_seconds": [
+        0.4941093999950681,
+        0.5276238999795169,
+        0.41595629998482764
+      ],
+      "trainable_parameters": 7088641,
+      "peak_working_set_bytes": 974417920
+    },
+    "four_fold_cv": {
+      "phase": "cv",
+      "started_utc": "2026-10-17T11:44:00.582433+00:00",
+      "wall_seconds_including_imports": 410.03305680002086,
+      "peak_working_set_bytes": 567128064,
+      "completed_without_exception": true,
+      "policy_hash": "297f34f418c10b53485b9468a52843ab361c7ca025d7ad55e2e6d1e3a82ea31e",
+      "test_groups_processed": 0
+    },
+    "fold_completion_elapsed_seconds": [
+      152.07,
+      236.19,
+      325.8,
+      409.994
+    ],
+    "cache_cold_start_included": false,
+    "cv_cold_imports_included": true,
+    "source_engine_cold_processing_benchmarked": false,
+    "http_upload_queue_poll_or_concurrent_client_latency_qualified": false
+  },
+  "outcome": {
+    "final24group_fit_performed": false,
+    "final_candidate_written": false,
+    "validation_performed": false,
+    "onnx_export_performed": false,
+    "engine_changed": false,
+    "deployment_performed": false,
+    "localization_quality_established": false,
+    "note": "The fixed chance gate prevented final fitting and validation. No parameters were retuned from earlier validation results. Workflow remains reproducible experimental research, not an available detector."
+  },
+  "integrity": {
+    "frozen_hashes_intact": true,
+    "artifacts_sha256": {
+      "plan.json": "297f34f418c10b53485b9468a52843ab361c7ca025d7ad55e2e6d1e3a82ea31e",
+      "finetune.py": "04cc2f18c8bc958fdeda0435157464880a992db71a72326a8796354e4ce0d638",
+      "synthetic_benchmark.json": "c0bff38ccdd5c718b219dec3c5335e96770ba6686371526436bde381c0e1e7a1",
+      "train_cache_report.json": "0747f284b3bd8649f0ab22697a765907f020bcb0424cbe15c7aa84e106ad0a70",
+      "cv_performance.json": "1715664a6ca845a240c0c19da288191c9bb62115857e3b0690dd588b0340ea11"
+    }
+  },
+  "quality_validated": false
+}

@@ -13,7 +13,16 @@ venv
 **/__pycache__
 **/.pytest_cache
 **/*.mov
+**/*.MOV
 **/*.mp4
+**/*.MP4
 **/*.xlsx
 **/*.onnx
 **/*.npz
+**/*.npy
+**/*.gguf
+**/*.safetensors
+**/*.pth
+**/*.pt
+**/*.sqlite*
+**/*.db*
