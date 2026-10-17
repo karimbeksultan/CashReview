@@ -6,7 +6,7 @@ Cash Review now has a running local application and a verified HTTP service path
 
 | Item | Handoff status |
 | --- | --- |
-| Requested GitHub repository | `https://github.com/karimbeksultan/Review.` — implementation pushed to branch codex/cash-review; review and merge status are tracked in GitHub |
+| Requested GitHub repository | `https://github.com/karimbeksultan/Review.` — implementation published on `main`; verification is tracked in GitHub Actions |
 | Local UI and API | `http://127.0.0.1:8000` while the local launcher is running |
 | Public UI URL | **Not configured** |
 | Public jury API base URL | **Not configured** |
