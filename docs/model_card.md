@@ -1,6 +1,6 @@
 # Local visual review baseline
 
-This implementation is an experimental candidate selector for human review. Its binary `violation` / `no_violation` API value is a learned dataset label, not a verified finding of wrongdoing. It does not identify people, interpret regulations, identify a particular cashier action, or establish competition readiness. `competition_ready` stays `false`.
+This implementation is an experimental candidate selector for human review. Its binary `violation` / `no_violation` API value is a learned dataset label, not a verified finding of wrongdoing. It does not identify people, interpret regulations or establish a particular cashier action. Operational readiness is separate from detection quality: the current public metadata has `quality_validated: false` and `validation_status: "failed_baseline"`.
 
 ## Representation and provenance
 
@@ -16,7 +16,7 @@ The supplied archive has 42 labelled videos, 22 positive and 20 negative. Exact 
 
 The preparation script freezes a class-stratified approximately 60/20/20 split with seed `26017`. The private `split.json` records every content hash and assignment and rejects a changed dataset fingerprint on reuse. The scaler and classifier use training groups only. Positive training examples come from ±2-second neighborhoods of supplied timestamps; unannotated portions of positive videos are not used as known negatives. Negative clips provide normal examples. Sample weights give each clip and each class equal total influence, regardless of duration. Validation video F1 chooses the threshold; ties use balanced accuracy, then the higher threshold. Test labels and predictions do not alter model parameters, threshold, preprocessing, or split.
 
-Exact grouping alone does not resolve possible near duplicates, actor/session overlap, or the shared camera setting. The small held-out set cannot establish alternate-angle performance. The final test must stay frozen if the baseline is improved.
+Exact grouping alone does not resolve possible near duplicates, actor/session overlap, or the shared camera setting. The small held-out set cannot establish alternate-angle performance. The original test was inspected during V1 evaluation; any later reuse is exploratory and cannot become a fresh holdout.
 
 ## Inference and timing
 
@@ -24,13 +24,13 @@ The runtime reads pixels from a new local video, without consulting filenames, d
 
 OpenCV `CAP_PROP_POS_MSEC` provides presentation times after decode/seek. If unavailable/non-monotonic during sequential extraction, the fallback is frame index divided by nominal frame rate and a warning is returned. Duration uses frame count divided by reported frame rate, checked against the final timestamp. This is adequate for the supplied constant-rate clips but does not validate all variable-rate inputs or QuickTime edit lists. Evidence must be independently checked for unusual inputs. A hard monotonic deadline is checked during decode, feature extraction, refinement and JPEG encoding; the worker additionally enforces its process deadline.
 
-Header dimensions are checked before the first explicit decode; actual dimensions are checked after every decoded frame. Defaults reject dimensions above 4,096 on either side or 8,000,000 pixels. `CASH_REVIEW_MAX_MODEL_DIMENSION` and `CASH_REVIEW_MAX_MODEL_PIXELS` configure those bounds, with a floor that supports 1080p. Evidence JPEGs are resized to a maximum 640-pixel side. Native `VideoCapture` container opening happens before Python can inspect header dimensions. These checks do not provide a complete decoder resource guarantee on Windows; the isolated worker process and hard process deadline mitigate native hangs and permit termination.
+Header dimensions are checked before the first explicit decode; actual dimensions are checked after every decoded frame. Defaults reject dimensions above 4,096 on either side or 8,000,000 pixels. `CASH_REVIEW_MAX_MODEL_DIMENSION` and `CASH_REVIEW_MAX_MODEL_PIXELS` configure those bounds, with a floor that supports 1080p. Evidence JPEGs now retain native resolution up to a 1,280-pixel maximum side at quality 88. `CASH_REVIEW_EVIDENCE_MAX_SIDE` configures a bounded 640–1,920-pixel limit; source images are never enlarged. This preserves the supplied 464×848 recordings instead of reducing them to 350×640. Native `VideoCapture` container opening happens before Python can inspect header dimensions. These checks do not provide a complete decoder resource guarantee on Windows; the isolated worker process and hard process deadline mitigate native hangs and permit termination.
 
 ## Meaning of results
 
 Events have type `visual_review_signal` and context rule `CR-001`. Their description explicitly states that the concrete action and regulatory violation are unestablished. Classifier scores are uncalibrated and should not be shown as a percentage likelihood of wrongdoing. A negative result means no baseline signal crossed its threshold; it does not certify compliance. One-second sampling and three-candidate limits can miss events. Source timestamps are not complete event truth, so the evaluation does not claim event precision/recall or typed event accuracy.
 
-An optional, separate private registry supports the user-requested sponsor-reference display beside the model answer. `prepare_reference_labels.py --data-dir PRIVATE_OPEN_DIR --output PRIVATE_REFERENCE_JSON` builds it from the supplied workbook, and `CASH_REVIEW_REFERENCE_LABELS` points to it. Matching uses content hashes solely to retrieve a clearly labelled reference for the UI. The registry contains no filenames or paths and stays out of Git/public exports. It is never read by model inference, never changes the model's prediction or event type, and never overrides a jury API result. Sponsor event categories remain `null` because the workbook supplies no categories. Both 57/68-second annotations for the ambiguous duplicate are retained. An unmatched upload has no sponsor reference; its label is not guessed.
+Reviewers can save an independent human decision and notes for a completed job. These records never change the model result, provide a source-label lookup, or automatically enter training. The source-label comparison has been removed from the runtime.
 
 ## Reproduction
 
@@ -68,5 +68,7 @@ Direct V1 engine checks after dimension checks and bounded evidence generation c
 The measured environment was Windows 11, Intel64 Family 6 Model 142 Stepping 12 CPU, 8 logical CPUs, OpenCV 5.0.0, NumPy 2.5.4, scikit-learn 1.9.1, with 2 requested OpenCV threads and CPU DNN execution. Native thread scheduling and other concurrent processes affect latency. Source videos, derived features, split IDs, learned arrays and per-clip output remain private; only these aggregate diagnostics belong in the public repository.
 
 ## Remaining qualification work
+
+Additional local feature and temporal studies were trained and rejected; see [model studies](model_studies.md). Their development results are kept separate from the original V1 test and do not replace it with a claimed successful detector.
 
 Review event semantics and complete interval/type annotations; implement and validate an observable event taxonomy; verify near-duplicate/session grouping; measure alternate-camera and lighting/occlusion robustness; evaluate all submitted jobs including failures; validate applicable rules; and measure upload-to-result latency on the intended local deployment. The generic baseline is a working engineering starting point with material model limitations.

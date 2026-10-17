@@ -1,4 +1,4 @@
-# Private case assets, learned models, runtime evidence and credentials
+# Private source assets, learned models, runtime evidence and credentials
 .env
 .env.*
 !.env.example
@@ -13,6 +13,10 @@ private/
 *.xlsx
 *.onnx
 *.npz
+*.gguf
+*.safetensors
+*.pth
+*.pt
 reference_labels.json
 split.json
 baseline.json

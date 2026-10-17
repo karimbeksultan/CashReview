@@ -105,6 +105,7 @@ def test_unready_is_not_reported_as_no_violation(settings, detector):
         assert client.get("/api/health/live").status_code == 200
         ready = client.get("/api/health/ready")
         assert ready.status_code == 503 and not ready.json()["ready"]
+        assert ready.json()["max_upload_bytes"] == settings.max_upload_bytes
         response = upload(client)
         assert response.status_code == 503 and "verdict" not in response.json()
         assert list(client.app.state.store.media_dir.iterdir()) == []
@@ -186,41 +187,131 @@ def test_multipart_parsing_consumes_deadline_and_slow_upload_times_out(settings)
     assert sent[0]["status"] == 408
 
 
-def test_sponsor_reference_display_is_independent_of_model_and_absent_from_jury(settings, tmp_path):
-    from dataclasses import replace
-    import hashlib
-    import json
-    registry = tmp_path / "private-reference.json"
-    digest = hashlib.sha256(MOV).hexdigest()
-    registry.write_text(json.dumps({"schema_version": 1, "labels": {digest: {
-        "verdict": "no_violation", "type": None, "source": "supplied sponsor workbook", "timestamps_sec": []
-    }}}), encoding="utf-8")
+def test_human_review_persists_separately_from_immutable_model_and_jury(settings):
     model_result = {"verdict": "violation", "violations": [{"type": "visual_review_signal"}],
                     "metadata": {"model_version": "test-only"}}
-    with TestClient(create_app(replace(settings, reference_labels_path=registry))) as client:
+    with TestClient(create_app(settings)) as client:
         known = upload(client).json()
         auth = {"Authorization": f"Bearer {known['access_token']}"}
         path = f"/api/ui/jobs/{known['job_id']}"
-        assert "sponsor_reference" not in client.get(path, headers=auth).json()
+        assert client.get(path, headers=auth).json()["human_review"] is None
         store = client.app.state.store
         claim = store.claim(30)
         assert store.finish(known["job_id"], claim["claim_token"], model_result)
+        immutable = store.get(known["job_id"])["result_json"]
+        saved = client.post(path + "/review", headers=auth,
+                            json={"decision": "no_violation", "notes": "Проверено вручную", "event_index": 0})
+        assert saved.status_code == 200
         response = client.get(path, headers=auth).json()
         assert response["result"] == model_result
-        assert response["sponsor_reference"] == {"available": True, "verdict": "no_violation", "type": None,
-                                                   "source": "supplied sponsor workbook", "timestamps_sec": []}
-        assert digest not in str(response) and str(registry) not in str(response)
+        assert response["human_review"] == saved.json()["human_review"]
+        assert response["human_review"]["decision"] == "no_violation"
+        assert store.get(known["job_id"])["result_json"] == immutable
+        assert "sponsor_reference" not in response
+        changed = client.post(path + "/review", headers=auth,
+                              json={"decision": "needs_review", "notes": "", "event_index": None})
+        assert changed.status_code == 200
+        assert client.get(path, headers=auth).json()["human_review"]["decision"] == "needs_review"
 
         jury = upload(client, ui=False).json()
         claim = store.claim(30)
         assert store.finish(jury["job_id"], claim["claim_token"], model_result)
+        # Even a separately stored review can never change or enter jury output.
+        store.save_review(jury["job_id"], "no_violation", "Private human judgment")
         jury_response = client.get(f"/api/v1/jobs/{jury['job_id']}", headers={"X-API-Key": KEY}).json()
-        assert jury_response["verdict"] == "violation" and "sponsor_reference" not in jury_response
+        assert jury_response["verdict"] == "violation" and "human_review" not in jury_response
+        assert "sponsor_reference" not in jury_response
 
-        unknown = upload(client, body=MOV + b"unseen source").json()
+
+def test_review_requires_same_job_token_completed_analysis_and_allowed_origin(settings):
+    with TestClient(create_app(settings)) as client:
+        first, second = upload(client).json(), upload(client).json()
+        path = f"/api/ui/jobs/{first['job_id']}/review"
+        payload = {"decision": "no_violation", "notes": ""}
+        auth = {"Authorization": f"Bearer {first['access_token']}"}
+        assert client.post(path, json=payload).status_code == 401
+        assert client.post(path, headers={"Authorization": f"Bearer {second['access_token']}"}, json=payload).status_code == 404
+        assert client.post(path, headers=auth, json=payload).status_code == 409
+        assert client.post(path, headers={**auth, "Origin": "https://untrusted.invalid"}, json=payload).status_code == 403
+        claim = client.app.state.store.claim(30)
+        client.app.state.store.fail(first["job_id"], claim["claim_token"], "test", "test failure")
+        assert client.post(path, headers=auth, json=payload).status_code == 409
+
+
+@pytest.mark.parametrize("payload", [
+    {"decision": "invented", "notes": ""},
+    {"decision": "violation", "notes": "a" * 4001},
+    {"decision": "violation", "notes": 123},
+    {"decision": "violation", "notes": "", "event_index": -1},
+    {"decision": "violation", "notes": "", "event_index": 1},
+    {"decision": "violation", "notes": "", "event_index": 0.5},
+    {"decision": "violation", "notes": "", "event_index": True},
+    {"decision": "violation", "notes": "", "username": "not-supported"},
+])
+def test_review_validation_rejects_invalid_decision_notes_and_event(settings, payload):
+    with TestClient(create_app(settings)) as client:
+        admitted = upload(client).json()
+        store = client.app.state.store
         claim = store.claim(30)
-        assert store.finish(unknown["job_id"], claim["claim_token"], model_result)
-        unknown_response = client.get(f"/api/ui/jobs/{unknown['job_id']}",
-                           headers={"Authorization": f"Bearer {unknown['access_token']}"}).json()
-        assert unknown_response["result"] == model_result
-        assert unknown_response["sponsor_reference"] == {"available": False, "verdict": None, "type": None, "source": None}
+        store.finish(admitted["job_id"], claim["claim_token"], {"verdict": "no_violation", "violations": []})
+        response = client.post(f"/api/ui/jobs/{admitted['job_id']}/review",
+                   headers={"Authorization": f"Bearer {admitted['access_token']}"}, json=payload)
+        assert response.status_code == 422
+        assert store.get_review(admitted["job_id"]) is None
+
+
+def test_review_body_has_a_preparse_limit(settings):
+    with TestClient(create_app(settings)) as client:
+        admitted = upload(client).json()
+        response = client.post(f"/api/ui/jobs/{admitted['job_id']}/review",
+                    headers={"Authorization": f"Bearer {admitted['access_token']}", "Content-Type": "application/json"},
+                    content=b"x" * (32 * 1024 + 1))
+        assert response.status_code == 413
+        assert client.post("/api/ui/jobs/malformed-id/review", content=b"x" * (32 * 1024 + 1)).status_code == 413
+
+
+def test_chunked_review_body_is_bounded_before_json_parse(settings):
+    with TestClient(create_app(settings)) as client:
+        admitted = upload(client).json()
+        def oversized_body():
+            yield b'{"notes":"'
+            yield b"x" * (32 * 1024)
+            yield b'"}'
+        response = client.post(f"/api/ui/jobs/{admitted['job_id']}/review",
+                     headers={"Authorization": f"Bearer {admitted['access_token']}", "Content-Type": "application/json"},
+                     content=oversized_body())
+        assert response.status_code == 413
+
+
+def test_concurrent_uploads_are_bounded_and_admission_slot_released(settings):
+    import asyncio
+    from dataclasses import replace
+    from cash_review.app import BoundaryMiddleware
+    async def exercise():
+        release = asyncio.Event()
+        entered = asyncio.Event()
+        statuses = []
+        async def target(scope, receive, send):
+            entered.set()
+            await release.wait()
+            await send({"type": "http.response.start", "status": 204, "headers": []})
+            await send({"type": "http.response.body", "body": b""})
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+        async def send(message):
+            if message["type"] == "http.response.start":
+                statuses.append(message["status"])
+        boundary = BoundaryMiddleware(target, replace(settings, queue_capacity=1))
+        def scope():
+            return {"type": "http", "method": "POST", "path": "/api/ui/analyze", "headers": [],
+                    "scheme": "http", "client": ("test", 1)}
+        first = asyncio.create_task(boundary(scope(), receive, send))
+        await entered.wait()
+        await boundary(scope(), receive, send)
+        assert statuses == [429]
+        release.set()
+        await first
+        await boundary(scope(), receive, send)
+        assert statuses == [429, 204, 204]
+        assert boundary.uploads_in_flight == 0
+    asyncio.run(exercise())

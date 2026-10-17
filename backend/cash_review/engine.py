@@ -105,7 +105,8 @@ def readiness() -> dict:
         reasons.append("Local model artifacts failed validation; prepare them again.")
     return {
         "ready": not reasons,
-        "competition_ready": False,
+        "quality_validated": False,
+        "validation_status": "failed_baseline" if config.get("schema_version") == 1 else "selection_only",
         "reasons": reasons,
         "model_version": config.get("model_version", "unprepared"),
         "model_kind": "experimental_visual_review_baseline",
@@ -233,6 +234,26 @@ def _read_at(capture, target: float, fps: float):
     return frame, pts
 
 
+def encode_evidence_frame(frame) -> str:
+    """Keep native source detail unless the configured bounded side limit is met."""
+    import cv2
+
+    _validate_dimensions(frame.shape[1], frame.shape[0])
+    try:
+        maximum_side = int(os.environ.get("CASH_REVIEW_EVIDENCE_MAX_SIDE", "1280"))
+    except ValueError:
+        raise ValueError("invalid_evidence_side_limit") from None
+    maximum_side = min(1920, max(640, maximum_side))
+    scale = min(1.0, maximum_side / max(frame.shape[:2]))
+    if scale < 1:
+        frame = cv2.resize(frame, (max(1, round(frame.shape[1] * scale)), max(1, round(frame.shape[0] * scale))),
+                           interpolation=cv2.INTER_AREA)
+    okay, jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 88])
+    if not okay:
+        raise ValueError("evidence_encode_failed")
+    return base64.b64encode(jpeg.tobytes()).decode("ascii")
+
+
 def analyze_video(path: Path, deadline: float, progress: Callable[[int, str], None]) -> dict:
     import cv2
     import numpy as np
@@ -276,13 +297,7 @@ def analyze_video(path: Path, deadline: float, progress: Callable[[int, str], No
             for target in (max(0, best_time - 0.5), best_time, min(extracted["duration_sec"] - 0.1, best_time + 0.5)):
                 _deadline(deadline)
                 frame, actual_time = _read_at(capture, target, extracted["fps"])
-                scale = min(1.0, 640 / max(frame.shape[:2]))
-                if scale < 1:
-                    frame = cv2.resize(frame, (max(1, round(frame.shape[1] * scale)), max(1, round(frame.shape[0] * scale))), interpolation=cv2.INTER_AREA)
-                okay, jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 82])
-                if not okay:
-                    raise ValueError("evidence_encode_failed")
-                evidence.append({"timestamp_sec": round(actual_time, 3), "image_base64": base64.b64encode(jpeg.tobytes()).decode("ascii")})
+                evidence.append({"timestamp_sec": round(actual_time, 3), "image_base64": encode_evidence_frame(frame)})
             events.append({"type": "visual_review_signal", "timecode_sec": round(best_time, 3),
                            "description": "Модель выделила визуальный фрагмент для проверки человеком. Конкретное действие и нарушение нормы не установлены.",
                            "rule_id": "CR-001", "confidence": round(best_score, 4), "evidence_frames": evidence})
@@ -299,7 +314,8 @@ def analyze_video(path: Path, deadline: float, progress: Callable[[int, str], No
     progress(98, "Local analysis complete")
     return {"verdict": "violation" if events else "no_violation", "violations": events,
             "metadata": {"duration_sec": extracted["duration_sec"], "model_version": config["model_version"],
-                         "competition_ready": False, "model_kind": "experimental_visual_review_baseline",
+                         "quality_validated": False, "validation_status": "failed_baseline" if config.get("schema_version") == 1 else "selection_only",
+                         "model_kind": "experimental_visual_review_baseline",
                          "warnings": warnings, "sample_interval_sec": 1, "sampled_frames": len(scores),
                          "processing_sec": round(time.monotonic() - started, 3), "threshold": threshold,
                          "max_signal_score": round(float(scores.max()), 4), "score_calibrated": False,

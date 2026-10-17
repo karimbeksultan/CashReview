@@ -15,7 +15,7 @@ $runtimePath = Join-Path $projectRoot 'runtime'
 New-Item -ItemType Directory -Path $runtimePath -Force | Out-Null
 $env:CASH_REVIEW_DATA_DIR = $runtimePath
 if (-not $ApiKey) {
-  $keyPath = Join-Path $runtimePath 'jury-key.txt'
+  $keyPath = Join-Path $runtimePath 'api-key.txt'
   if (Test-Path -LiteralPath $keyPath) { $ApiKey = (Get-Content -LiteralPath $keyPath -Raw).Trim() }
   else {
     $keyBytes = New-Object byte[] 32
@@ -24,7 +24,7 @@ if (-not $ApiKey) {
     $ApiKey = [Convert]::ToBase64String($keyBytes)
     Set-Content -LiteralPath $keyPath -Value $ApiKey -NoNewline
   }
-  Write-Host "Jury key is stored privately in $keyPath."
+  Write-Host "Integration key is stored privately in $keyPath."
 }
 $env:CASH_REVIEW_API_KEY = $ApiKey
 Write-Host "Cash Review: http://127.0.0.1:$Port  (Ctrl+C to stop)"

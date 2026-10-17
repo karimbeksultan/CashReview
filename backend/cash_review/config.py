@@ -9,11 +9,6 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = BACKEND_DIR.parent
 
 
-def _reference_labels_path() -> Path | None:
-    value = os.getenv("CASH_REVIEW_REFERENCE_LABELS", "").strip()
-    return Path(value).resolve() if value else None
-
-
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path = field(default_factory=lambda: Path(os.getenv("CASH_REVIEW_DATA_DIR", str(PROJECT_DIR / "runtime"))).resolve())
@@ -31,7 +26,6 @@ class Settings:
     start_worker: bool = True
     frontend_dir: Path = PROJECT_DIR / "frontend" / "dist"
     rules_path: Path = BACKEND_DIR / "rules" / "registry.json"
-    reference_labels_path: Path | None = field(default_factory=_reference_labels_path)
 
     def __post_init__(self) -> None:
         if self.max_upload_bytes <= 0 or not 0 < self.deadline_seconds <= 300:

@@ -1,0 +1,186 @@
+{
+  "scope": "Exploratory model development after the original failed baseline; not an independent accuracy benchmark.",
+  "confusion_order": "true negative/positive rows; predicted negative/positive columns",
+  "development_reuse": "The same eight development groups were reused across studies; selection optimism remains. The original eight test groups were excluded from these studies, but had already been inspected during V1.",
+  "studies": [
+    {
+      "name": "Dense optical-flow bags",
+      "training_groups": 24,
+      "development_groups": 8,
+      "selection": {
+        "kernel": "rbf",
+        "C": 1.0,
+        "threshold": -0.07376422492257989,
+        "oof": {
+          "n": 24,
+          "tp": 12,
+          "tn": 6,
+          "fp": 5,
+          "fn": 1,
+          "recall": 0.9230769230769231,
+          "specificity": 0.5454545454545454,
+          "balanced_accuracy": 0.7342657342657343,
+          "auc": 0.6713286713286714
+        }
+      },
+      "development": {
+        "n": 8,
+        "tp": 1,
+        "tn": 0,
+        "fp": 4,
+        "fn": 3,
+        "recall": 0.25,
+        "specificity": 0.0,
+        "balanced_accuracy": 0.125,
+        "auc": 0.1875
+      },
+      "new_test_evaluated": 0,
+      "promoted": false
+    },
+    {
+      "name": "MobileNetV2 penultimate embeddings and deltas",
+      "training_groups": 24,
+      "development_groups": 8,
+      "selection": {
+        "method": "video_rbf_C1",
+        "threshold": -0.004482841458594955,
+        "oof": {
+          "n": 24,
+          "tp": 7,
+          "tn": 6,
+          "fp": 5,
+          "fn": 6,
+          "recall": 0.5384615384615384,
+          "specificity": 0.5454545454545454,
+          "balanced_accuracy": 0.5419580419580419,
+          "auc": 0.5384615384615385
+        }
+      },
+      "development": {
+        "n": 8,
+        "tp": 0,
+        "tn": 1,
+        "fp": 3,
+        "fn": 4,
+        "recall": 0.0,
+        "specificity": 0.25,
+        "balanced_accuracy": 0.125,
+        "auc": 0.0625
+      },
+      "new_test_evaluated": 0,
+      "promoted": false
+    },
+    {
+      "name": "Appearance/motion/dynamics family comparison",
+      "training_groups": 24,
+      "development_groups": 8,
+      "selection": {
+        "feature_family": "dynamic",
+        "classifier": "forest",
+        "threshold": 0.4454166666666667,
+        "train_oof": {
+          "confusion": [
+            [
+              7,
+              4
+            ],
+            [
+              3,
+              10
+            ]
+          ],
+          "balanced_accuracy": 0.7027972027972028,
+          "specificity": 0.6363636363636364,
+          "recall": 0.7692307692307693,
+          "precision": 0.7142857142857143,
+          "f1": 0.7407407407407407
+        }
+      },
+      "development": {
+        "confusion": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "balanced_accuracy": 0.5,
+        "specificity": 0.5,
+        "recall": 0.5,
+        "precision": 0.5,
+        "f1": 0.5
+      },
+      "new_test_evaluated": false,
+      "promoted": false
+    },
+    {
+      "name": "R3D18 temporal representation",
+      "training_groups": 24,
+      "development_groups": 8,
+      "selection": {
+        "kind": "normal_anomaly",
+        "C": null,
+        "nu": 0.1,
+        "train_oof_partial_auc_fpr_0_25": 0.4950549450549451,
+        "train_oof_at_fixed_0_5": {
+          "balanced_accuracy": 0.46153846153846156,
+          "precision": 0.5217391304347826,
+          "recall": 0.9230769230769231,
+          "f1": 0.6666666666666666,
+          "specificity": 0.0,
+          "confusion_matrix": [
+            [
+              0,
+              11
+            ],
+            [
+              1,
+              12
+            ]
+          ],
+          "n": 24
+        }
+      },
+      "development_promotable": false,
+      "best_unconstrained_development": {
+        "balanced_accuracy": 0.625,
+        "precision": 0.5714285714285714,
+        "recall": 1.0,
+        "f1": 0.7272727272727273,
+        "specificity": 0.25,
+        "confusion_matrix": [
+          [
+            1,
+            3
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        "n": 8,
+        "threshold": 0.8500000000000001
+      },
+      "new_test_evaluated": false,
+      "promoted": false,
+      "benchmark": {
+        "scope": "direct local temporal feature extraction; excludes upload,queue,APIpolling,evidencegeneration",
+        "longest_duration_sec": 142.5333,
+        "longest_processing_sec": 74.844,
+        "peak_rss_mb": 319.7,
+        "threads": 2,
+        "backend": "ONNXRuntime CPU",
+        "windows": 36
+      }
+    }
+  ],
+  "competition_ready": false,
+  "remaining_evidence": [
+    "Reviewed event intervals/types",
+    "Independent new recordings/cameras",
+    "New-model full-path performance and offline tests"
+  ]
+}

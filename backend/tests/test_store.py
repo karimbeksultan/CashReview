@@ -109,3 +109,46 @@ def test_upload_admission_time_reduces_processing_budget(tmp_path: Path):
     assert job["created_at"] == 100 and job["deadline_at"] == 400
     with pytest.raises(TimeoutError):
         store.create("two", "two.mov", 20, "sha", 300, 86400, now=500, admitted_at=100)
+
+
+def test_review_table_migrates_existing_jobs_and_review_retention_cascades(tmp_path: Path):
+    store = JobStore(tmp_path)
+    add(store, "existing")
+    claim = store.claim(30, now=101)
+    result = {"verdict": "no_violation", "violations": [], "metadata": {}}
+    assert store.finish("existing", claim["claim_token"], result, now=102)
+    with store.connection() as db:
+        db.execute("DROP TABLE human_reviews")  # Represents the preceding application schema.
+    migrated = JobStore(tmp_path)
+    assert migrated.get("existing")["status"] == "done"
+    saved = migrated.save_review("existing", "needs_review", "Проверка", now=103)
+    reopened = JobStore(tmp_path)
+    assert reopened.get_review("existing") == saved
+    assert reopened.get("existing")["result_json"] == store.get("existing")["result_json"]
+    assert reopened.cleanup(now=90000) == 1
+    assert reopened.get_review("existing") is None
+
+
+def test_review_accepts_maximum_notes_and_rejects_expired_job(tmp_path: Path):
+    from cash_review.store import ReviewUnavailable
+    store = JobStore(tmp_path)
+    add(store, "existing")
+    claim = store.claim(30, now=101)
+    store.finish("existing", claim["claim_token"], {"verdict": "violation", "violations": [{}]}, now=102)
+    review = store.save_review("existing", "violation", "я" * 4000, 0, now=103)
+    assert len(review["notes"]) == 4000 and review["event_index"] == 0
+    with pytest.raises(ReviewUnavailable):
+        store.save_review("existing", "needs_review", "", now=90000)
+
+
+def test_jpeg_header_is_bounded_before_native_decoding(monkeypatch):
+    import cv2
+    from cash_review.worker import jpeg_dimensions
+    raw = b"\xff\xd8\xff\xc0\x00\x08\x08\x7f\xff\x7f\xff\x01\xff\xd9"
+    monkeypatch.setattr(cv2, "imdecode", lambda *args: pytest.fail("Oversized evidence reached native decoding"))
+    with pytest.raises(ValueError):
+        jpeg_dimensions(raw)
+    event = {"type": "visual_review_signal", "description": "Candidate review moment", "rule_id": "CR-001",
+             "timecode_sec": 1, "evidence_frames": [{"timestamp_sec": 1, "image_base64": base64.b64encode(raw).decode()}]}
+    with pytest.raises(ValueError):
+        validate_result({"verdict": "violation", "violations": [event]})

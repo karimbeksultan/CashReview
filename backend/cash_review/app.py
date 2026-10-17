@@ -1,4 +1,4 @@
-"""FastAPI boundary for the same local detector used by jury and browser jobs."""
+"""FastAPI boundary shared by the integration API and browser workspace."""
 
 from collections import defaultdict, deque
 import asyncio
@@ -10,27 +10,36 @@ import re
 import secrets
 import threading
 import time
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 from starlette.datastructures import Headers
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from .config import Settings
-from .references import sponsor_reference
-from .store import JobStore, QueueFull
+from .store import JobStore, QueueFull, ReviewNotReady, ReviewUnavailable
 from .worker import Worker, model_readiness
 
 
-class BodyTooLarge(Exception):
-    pass
+class BodyTooLarge(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(413, "Request exceeds the configured size limit.")
 
 
-class UploadTimedOut(Exception):
-    pass
+class UploadTimedOut(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(408, "Upload exceeded the analysis deadline.")
+
+
+class HumanReviewInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decision: Literal["violation", "no_violation", "needs_review"]
+    notes: str = Field(max_length=4000, strict=True)
+    event_index: Annotated[int, Field(ge=0, strict=True)] | None = None
 
 
 class RateLimiter:
@@ -67,6 +76,8 @@ class BoundaryMiddleware:
     def __init__(self, app: ASGIApp, settings: Settings) -> None:
         self.app, self.settings = app, settings
         self.limiter = RateLimiter()
+        self.upload_lock = threading.Lock()
+        self.uploads_in_flight = 0
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -76,6 +87,7 @@ class BoundaryMiddleware:
         path = scope.get("path", "")
         method = scope.get("method", "")
         is_upload = method == "POST" and path in {"/api/v1/analyze", "/api/ui/analyze"}
+        is_review = method == "POST" and re.fullmatch(r"/api/ui/jobs/[^/]+/review", path) is not None
         if is_upload:
             scope.setdefault("state", {}).update({"admitted_at": time.time(),
                                                   "upload_deadline": time.monotonic() + self.settings.deadline_seconds})
@@ -97,14 +109,23 @@ class BoundaryMiddleware:
                 await JSONResponse({"detail": "Too many requests. Retry shortly."}, 429, headers={"Retry-After": "60"})(scope, receive, send)
                 return
         # Allow small multipart headers beyond the actual video limit.
-        maximum_body = self.settings.max_upload_bytes + 1024 * 1024
-        if is_upload:
+        maximum_body = self.settings.max_upload_bytes + 1024 * 1024 if is_upload else 32 * 1024
+        if is_upload or is_review:
             try:
                 content_length = int(headers.get("content-length", "0"))
             except ValueError:
                 content_length = maximum_body + 1
             if content_length < 0 or content_length > maximum_body:
-                await JSONResponse({"detail": "Upload exceeds the configured size limit."}, 413)(scope, receive, send)
+                await JSONResponse({"detail": "Request exceeds the configured size limit."}, 413)(scope, receive, send)
+                return
+        if is_upload:
+            with self.upload_lock:
+                admitted = self.uploads_in_flight < self.settings.queue_capacity
+                if admitted:
+                    self.uploads_in_flight += 1
+            if not admitted:
+                await JSONResponse({"detail": "Too many concurrent uploads. Retry shortly."}, 429,
+                                   headers={"Retry-After": "5"})(scope, receive, send)
                 return
         received = 0
         started = False
@@ -121,7 +142,7 @@ class BoundaryMiddleware:
                     raise UploadTimedOut() from None
             else:
                 message = await receive()
-            if is_upload and message["type"] == "http.request":
+            if (is_upload or is_review) and message["type"] == "http.request":
                 received += len(message.get("body", b""))
                 if received > maximum_body:
                     raise BodyTooLarge()
@@ -148,6 +169,10 @@ class BoundaryMiddleware:
         except UploadTimedOut:
             if not started:
                 await JSONResponse({"detail": "Upload exceeded the analysis deadline."}, 408)(scope, receive, send)
+        finally:
+            if is_upload:
+                with self.upload_lock:
+                    self.uploads_in_flight -= 1
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -177,7 +202,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                allow_headers=["Authorization", "Content-Type", "X-API-Key"])
     application.add_middleware(BoundaryMiddleware, settings=config)
 
-    def jury_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
+    def integration_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
         if not key_is_valid(config, x_api_key or ""):
             raise HTTPException(401, "A valid X-API-Key is required.")
 
@@ -193,7 +218,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except (OSError, ValueError):
             reasons.append("The rule registry is unavailable.")
         return {**model, "ready": bool(model.get("ready") and not reasons), "reasons": reasons,
-                "local_only": True, "deadline_seconds": config.deadline_seconds}
+                "local_only": True, "deadline_seconds": config.deadline_seconds,
+                "max_upload_bytes": config.max_upload_bytes}
 
     def fetch_job(request: Request, job_id: str) -> dict[str, Any]:
         if not re.fullmatch(r"[a-f0-9]{32}", job_id):
@@ -224,11 +250,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             result = json.loads(job["result_json"])
             if ui:
                 response["result"] = result
-                response["sponsor_reference"] = sponsor_reference(config.reference_labels_path, job["sha256"])
             else:
                 response.update(result)
         if job["status"] == "failed":
             response["error"] = {"code": job["error_code"], "message": job["error_message"]}
+        if ui:
+            response["human_review"] = application.state.store.get_review(job["id"])
         return response
 
     async def accept_upload(request: Request, upload: UploadFile, browser: bool) -> dict[str, Any]:
@@ -299,12 +326,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except (OSError, ValueError):
             raise HTTPException(503, "The rule registry is unavailable.")
 
-    @application.post("/api/v1/analyze", status_code=202, dependencies=[Depends(jury_key)], tags=["jury"])
-    async def jury_analyze(request: Request, file: Annotated[UploadFile, File()]) -> dict[str, Any]:
+    @application.post("/api/v1/analyze", status_code=202, dependencies=[Depends(integration_key)], tags=["integration"])
+    async def integration_analyze(request: Request, file: Annotated[UploadFile, File()]) -> dict[str, Any]:
         return await accept_upload(request, file, False)
 
-    @application.get("/api/v1/jobs/{job_id}", dependencies=[Depends(jury_key)], tags=["jury"])
-    def jury_status(request: Request, job_id: str) -> dict[str, Any]:
+    @application.get("/api/v1/jobs/{job_id}", dependencies=[Depends(integration_key)], tags=["integration"])
+    def integration_status(request: Request, job_id: str) -> dict[str, Any]:
         job = fetch_job(request, job_id)
         if job["token_hash"] is not None:
             raise HTTPException(404, "Job not found or expired.")
@@ -317,6 +344,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @application.get("/api/ui/jobs/{job_id}", tags=["review"])
     def browser_status(job: Annotated[dict[str, Any], Depends(ui_job)]) -> dict[str, Any]:
         return snapshot(job, True)
+
+    @application.post("/api/ui/jobs/{job_id}/review", tags=["review"])
+    def browser_review(request: Request, review: HumanReviewInput,
+                       job: Annotated[dict[str, Any], Depends(ui_job)]) -> dict[str, Any]:
+        try:
+            saved = request.app.state.store.save_review(job["id"], review.decision, review.notes, review.event_index)
+        except ReviewUnavailable:
+            raise HTTPException(404, "Job not found or expired.")
+        except ReviewNotReady:
+            raise HTTPException(409, "A human decision can be saved after analysis completes.")
+        except ValueError:
+            raise HTTPException(422, "The event index must identify an event in this model result.")
+        return {"human_review": saved}
 
     @application.get("/api/ui/jobs/{job_id}/media", tags=["review"])
     def browser_media(request: Request, job: Annotated[dict[str, Any], Depends(ui_job)]) -> FileResponse:

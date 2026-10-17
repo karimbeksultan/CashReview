@@ -19,6 +19,14 @@ class QueueFull(Exception):
     pass
 
 
+class ReviewUnavailable(Exception):
+    pass
+
+
+class ReviewNotReady(Exception):
+    pass
+
+
 class JobStore:
     def __init__(self, data_dir: Path, capacity: int = 4) -> None:
         self.data_dir = data_dir.resolve()
@@ -52,6 +60,13 @@ class JobStore:
                 );
                 CREATE INDEX IF NOT EXISTS jobs_pending ON jobs(status,created_at);
                 CREATE INDEX IF NOT EXISTS jobs_expiry ON jobs(expires_at);
+                CREATE TABLE IF NOT EXISTS human_reviews (
+                    job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+                    decision TEXT NOT NULL CHECK(decision IN ('violation','no_violation','needs_review')),
+                    notes TEXT NOT NULL CHECK(length(notes)<=4000),
+                    event_index INTEGER CHECK(event_index IS NULL OR event_index>=0),
+                    updated_at REAL NOT NULL
+                );
             """)
         # POSIX deployments use owner-only permissions; Windows uses the host's ACL.
         if os.name != "nt":
@@ -112,6 +127,39 @@ class JobStore:
         now = time.time() if now is None else now
         return bool(job["token_hash"] and job["token_expires_at"] > now and
                     secrets.compare_digest(job["token_hash"], self.token_hash(token)))
+
+    def get_review(self, job_id: str) -> dict[str, Any] | None:
+        with self.connection() as db:
+            row = db.execute("SELECT decision,notes,event_index,updated_at FROM human_reviews WHERE job_id=?", (job_id,)).fetchone()
+        return dict(row) if row else None
+
+    def save_review(self, job_id: str, decision: str, notes: str, event_index: int | None = None,
+                    now: float | None = None) -> dict[str, Any]:
+        """Persist a human judgment separately; never update the model result."""
+        now = time.time() if now is None else now
+        if decision not in {"violation", "no_violation", "needs_review"} or not isinstance(notes, str) or len(notes) > 4000:
+            raise ValueError("Invalid human review")
+        if event_index is not None and (type(event_index) is not int or event_index < 0):
+            raise ValueError("Invalid event index")
+        with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
+            try:
+                job = db.execute("SELECT status,expires_at,result_json FROM jobs WHERE id=?", (job_id,)).fetchone()
+                if job is None or job["expires_at"] <= now:
+                    raise ReviewUnavailable()
+                if job["status"] != "done":
+                    raise ReviewNotReady()
+                if event_index is not None and event_index >= len(json.loads(job["result_json"])["violations"]):
+                    raise ValueError("Event index is outside this model result")
+                db.execute("""INSERT INTO human_reviews(job_id,decision,notes,event_index,updated_at)
+                    VALUES (?,?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET
+                    decision=excluded.decision,notes=excluded.notes,event_index=excluded.event_index,
+                    updated_at=excluded.updated_at""", (job_id, decision, notes, event_index, now))
+                db.execute("COMMIT")
+            except BaseException:
+                db.execute("ROLLBACK")
+                raise
+        return {"decision": decision, "notes": notes, "event_index": event_index, "updated_at": now}
 
     def claim(self, lease_seconds: float, now: float | None = None) -> dict[str, Any] | None:
         now = time.time() if now is None else now
@@ -181,7 +229,11 @@ class JobStore:
             db.executemany("DELETE FROM jobs WHERE id=?", [(r["id"],) for r in rows])
             db.execute("COMMIT")
         for row in rows:
-            self.media_path(row["media_name"]).unlink(missing_ok=True)
+            try:
+                self.media_path(row["media_name"]).unlink(missing_ok=True)
+            except OSError:
+                # Locked files are retried by orphan cleanup on the next pass.
+                pass
         with self.connection() as db:
             referenced = {row[0] for row in db.execute("SELECT media_name FROM jobs")}
         # Remove interrupted uploads/admissions after a generous grace period.
@@ -189,13 +241,13 @@ class JobStore:
             try:
                 if path.stat().st_mtime < now - 3600:
                     path.unlink(missing_ok=True)
-            except FileNotFoundError:
+            except OSError:
                 pass
         for path in self.media_dir.glob("*.mov"):
             try:
                 if path.name not in referenced and path.stat().st_mtime < now - 3600:
                     path.unlink(missing_ok=True)
-            except FileNotFoundError:
+            except OSError:
                 pass
         return len(rows)
 

@@ -31,7 +31,39 @@ def model_readiness() -> dict[str, Any]:
         return {"ready": False, "reasons": ["Local detector dependencies or artifacts are unavailable."]}
 
 
-def validate_result(result: Any) -> dict[str, Any]:
+def jpeg_dimensions(raw: bytes) -> tuple[int, int]:
+    """Read JPEG frame dimensions without invoking a native image decoder."""
+    offset = 2
+    frame_markers = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+    while offset < len(raw):
+        if raw[offset] != 0xFF:
+            raise ValueError("Invalid JPEG header")
+        while offset < len(raw) and raw[offset] == 0xFF:
+            offset += 1
+        if offset >= len(raw):
+            break
+        marker = raw[offset]
+        offset += 1
+        if marker in {0xD8, 0x01} or 0xD0 <= marker <= 0xD7:
+            continue
+        if marker in {0xD9, 0xDA} or offset + 2 > len(raw):
+            break
+        length = int.from_bytes(raw[offset:offset + 2], "big")
+        if length < 2 or offset + length > len(raw):
+            raise ValueError("Invalid JPEG segment")
+        if marker in frame_markers:
+            if length < 8:
+                raise ValueError("Invalid JPEG frame")
+            height = int.from_bytes(raw[offset + 3:offset + 5], "big")
+            width = int.from_bytes(raw[offset + 5:offset + 7], "big")
+            if width < 1 or height < 1 or max(width, height) > 4096 or width * height > 8_000_000:
+                raise ValueError("Evidence dimensions exceed the safety limit")
+            return width, height
+        offset += length
+    raise ValueError("JPEG dimensions are unavailable")
+
+
+def validate_result(result: Any, decode_images: bool = True) -> dict[str, Any]:
     """Reject incomplete evidence instead of publishing a misleading verdict."""
     if not isinstance(result, dict) or result.get("verdict") not in {"no_violation", "violation"}:
         raise ValueError("Invalid analysis verdict")
@@ -44,14 +76,15 @@ def validate_result(result: Any) -> dict[str, Any]:
     if not isinstance(metadata, dict):
         raise ValueError("Invalid metadata")
     duration = metadata.get("duration_sec")
-    if duration is not None and (not isinstance(duration, (float, int)) or not math.isfinite(duration) or duration <= 0):
+    if duration is not None and (type(duration) not in {float, int} or not math.isfinite(duration) or duration <= 0):
         raise ValueError("Invalid video duration")
     normalized = []
+    encoded_bytes = 0
     for event in violations:
         if not isinstance(event, dict):
             raise ValueError("Invalid event")
         timestamp = event.get("timecode_sec")
-        if not isinstance(timestamp, (float, int)) or not math.isfinite(timestamp) or timestamp < 0:
+        if type(timestamp) not in {float, int} or not math.isfinite(timestamp) or timestamp < 0:
             raise ValueError("Invalid event timestamp")
         if duration is not None and timestamp > duration + 0.25:
             raise ValueError("Event outside video")
@@ -68,21 +101,26 @@ def validate_result(result: Any) -> dict[str, Any]:
                 raise ValueError("Invalid evidence frame")
             if len(frame["image_base64"]) > 4 * 1024 * 1024:
                 raise ValueError("Evidence frame too large")
+            encoded_bytes += len(frame["image_base64"])
+            if encoded_bytes > 16 * 1024 * 1024:
+                raise ValueError("Evidence result too large")
             stamp = frame.get("timestamp_sec")
-            if not isinstance(stamp, (float, int)) or not math.isfinite(stamp) or stamp < 0:
+            if type(stamp) not in {float, int} or not math.isfinite(stamp) or stamp < 0:
                 raise ValueError("Invalid frame timestamp")
             if duration is not None and stamp > duration + 0.25:
                 raise ValueError("Frame outside video")
             raw = base64.b64decode(frame["image_base64"], validate=True)
             if not raw.startswith(b"\xff\xd8") or not raw.endswith(b"\xff\xd9"):
                 raise ValueError("Evidence must be JPEG")
-            import cv2
-            import numpy as np
-            decoded = cv2.imdecode(np.frombuffer(raw, dtype=np.uint8), cv2.IMREAD_REDUCED_COLOR_2)
-            if decoded is None or decoded.size == 0 or max(decoded.shape[:2]) > 4096:
-                raise ValueError("Evidence JPEG could not be decoded safely")
+            jpeg_dimensions(raw)
+            if decode_images:
+                import cv2
+                import numpy as np
+                decoded = cv2.imdecode(np.frombuffer(raw, dtype=np.uint8), cv2.IMREAD_REDUCED_COLOR_2)
+                if decoded is None or decoded.size == 0:
+                    raise ValueError("Evidence JPEG could not be decoded safely")
         confidence = event.get("confidence")
-        if confidence is not None and (not isinstance(confidence, (float, int)) or not math.isfinite(confidence) or not 0 <= confidence <= 1):
+        if confidence is not None and (type(confidence) not in {float, int} or not math.isfinite(confidence) or not 0 <= confidence <= 1):
             raise ValueError("Invalid event confidence")
         normalized.append({**{k: v for k, v in event.items() if k != "frames"}, "evidence_frames": frames})
     return {"verdict": result["verdict"], "violations": normalized, "metadata": metadata}
@@ -93,7 +131,8 @@ def _analysis_process(connection: Any, source: str, deadline: float) -> None:
     try:
         result = get_engine().analyze_video(Path(source), deadline,
                     lambda percent, stage: connection.send(("progress", int(percent), str(stage)[:120])))
-        connection.send(("result", result))
+        # Native JPEG validation shares the detector's killable process/deadline.
+        connection.send(("result", validate_result(result)))
     except TimeoutError:
         connection.send(("error", "deadline_exceeded"))
     except ValueError:
@@ -202,7 +241,7 @@ class Worker:
                 lambda percent, stage: self.store.progress(job_id, token, percent, stage),
                 self.stop_event,
             )
-            self.store.finish(job_id, token, validate_result(result))
+            self.store.finish(job_id, token, validate_result(result, decode_images=False))
             self.store.expire_deadlines()
         except TimeoutError:
             self.store.fail(job_id, token, "deadline_exceeded", "Analysis exceeded the five-minute deadline.")
