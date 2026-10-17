@@ -107,3 +107,22 @@ test("only a complete server review receipt can be displayed as saved", () => {
   ])
     assert.throws(() => parseHumanReview(value, "invalid"), InvalidResultError);
 });
+
+test("server review limit counts Unicode codepoints rather than UTF-16 units", () => {
+  const review = {
+    decision: "needs_review",
+    notes: "😀".repeat(4000),
+    event_index: null,
+    updated_at: 12345,
+  };
+  assert.equal(review.notes.length, 8000);
+  assert.deepEqual(parseHumanReview(review, "invalid"), review);
+  assert.equal(
+    parseUiJob({ ...negative, human_review: review }, id, "invalid").status,
+    "done",
+  );
+  assert.throws(
+    () => parseHumanReview({ ...review, notes: review.notes + "a" }, "invalid"),
+    InvalidResultError,
+  );
+});

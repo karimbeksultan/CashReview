@@ -73,7 +73,7 @@ export function parseHumanReview(value: unknown, message: string): HumanReview {
       String(value.decision),
     ) ||
     typeof value.notes !== "string" ||
-    value.notes.length > 4000 ||
+    Array.from(value.notes).length > 4000 ||
     !timestamp(value.updated_at) ||
     !(
       value.event_index === null ||

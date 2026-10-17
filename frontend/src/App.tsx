@@ -123,6 +123,7 @@ export default function App() {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [retrievalError, setRetrievalError] = useState("");
   const [drag, setDrag] = useState(false);
   const [selected, setSelected] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -162,7 +163,7 @@ export default function App() {
   const active = findings[selected];
   const rule = rules.find((value) => value.id === active?.rule_id);
   const isResult = demo || job?.status === "done";
-  const inProgress = busy || job?.status === "processing";
+  const inProgress = busy || (job?.status === "processing" && !retrievalError);
   const experimental =
     demo ||
     (job?.metadata?.validation_status ?? runtime?.validation_status) !==
@@ -228,37 +229,27 @@ export default function App() {
     return () => clearInterval(timer);
   }, [demo, playing]);
   useEffect(() => {
-    if (!job || job.status !== "processing" || !token) return;
+    if (!job || job.status !== "processing" || !token || retrievalError) return;
     let stopped = false;
+    const run = generation.current;
     let timer: ReturnType<typeof setTimeout>;
     const controller = new AbortController();
-    const deadline = job.deadline_at
-      ? job.deadline_at * 1000 + 3000
-      : uploadStarted.current + 303000;
+    const deadline =
+      typeof job.deadline_at === "number" && Number.isFinite(job.deadline_at)
+        ? job.deadline_at * 1000
+        : uploadStarted.current + 300000;
     const poll = async () => {
-      if (Date.now() > deadline) {
-        setJob((value) =>
-          value
-            ? {
-                ...value,
-                status: "failed",
-                error: { message: t.retrievalError },
-              }
-            : value,
-        );
-        return;
-      }
       try {
+        // The processing deadline does not expire an already completed result.
+        // Always allow a bounded status GET, including an explicit retry later.
         const data = await request(`/api/ui/jobs/${job.job_id}`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: AbortSignal.any([
             controller.signal,
-            AbortSignal.timeout(
-              Math.max(1, Math.min(15000, deadline - Date.now())),
-            ),
+            AbortSignal.timeout(15000),
           ]),
         });
-        if (!stopped) {
+        if (!stopped && run === generation.current) {
           const next = parseUiJob(data, job.job_id, t.invalidResult);
           setJob(next);
           if (next.status === "done") {
@@ -280,10 +271,19 @@ export default function App() {
                 saved: true,
               });
           }
-          if (data.status === "processing") timer = setTimeout(poll, 1000);
+          if (next.status === "processing") {
+            const serverDeadline =
+              typeof next.deadline_at === "number" &&
+              Number.isFinite(next.deadline_at)
+                ? next.deadline_at * 1000
+                : deadline;
+            if (Date.now() >= serverDeadline)
+              setRetrievalError(t.retrievalError);
+            else timer = setTimeout(poll, 1000);
+          }
         }
       } catch (e) {
-        if (stopped) return;
+        if (stopped || run !== generation.current) return;
         if (
           e instanceof InvalidResultError ||
           (e instanceof HttpError && [401, 403, 404].includes(e.status))
@@ -293,6 +293,7 @@ export default function App() {
               ? { ...value, status: "failed", error: { message: e.message } }
               : value,
           );
+        else if (Date.now() >= deadline) setRetrievalError(t.retrievalError);
         else timer = setTimeout(poll, 2500);
       }
     };
@@ -302,7 +303,15 @@ export default function App() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [job?.job_id, job?.status, token, t.retrievalError, t.invalidResult]);
+  }, [
+    job?.job_id,
+    job?.status,
+    job?.deadline_at,
+    token,
+    retrievalError,
+    t.retrievalError,
+    t.invalidResult,
+  ]);
   const seek = useCallback(
     (seconds: number) => {
       const next = Math.max(
@@ -317,9 +326,19 @@ export default function App() {
   const play = useCallback(() => {
     if (demo) setPlaying((value) => !value);
     else if (video.current) {
-      if (video.current.paused)
-        void video.current.play().catch(() => setError(t.unsupported));
-      else video.current.pause();
+      const element = video.current;
+      const run = generation.current;
+      if (element.paused)
+        void element.play().catch((reason: unknown) => {
+          if (
+            run !== generation.current ||
+            video.current !== element ||
+            (reason instanceof DOMException && reason.name === "AbortError")
+          )
+            return;
+          setError(t.unsupported);
+        });
+      else element.pause();
     }
   }, [demo, t.unsupported]);
   useEffect(() => {
@@ -360,6 +379,7 @@ export default function App() {
     setJob(null);
     setToken("");
     setError("");
+    setRetrievalError("");
     setSelected(0);
     setPlaying(false);
     setCurrent(0);
@@ -391,6 +411,7 @@ export default function App() {
     setBusy(true);
     setJob(null);
     setError("");
+    setRetrievalError("");
     setElapsed(0);
     uploadStarted.current = Date.now();
     const run = generation.current;
@@ -873,7 +894,7 @@ export default function App() {
                       </div>
                       <div className="player-keyboard">{t.keyboard}</div>
                     </section>
-                    {!isResult && !inProgress && (
+                    {!job && !isResult && !inProgress && (
                       <div className="analysis-action">
                         <div>
                           <strong>{file?.name}</strong>
@@ -889,7 +910,7 @@ export default function App() {
                         </button>
                       </div>
                     )}
-                    {!ready && !isResult && !inProgress && (
+                    {!ready && !job && !isResult && !inProgress && (
                       <div className="inline-notice">
                         <Info size={22} />
                         <p>{t.notReadyText}</p>
@@ -905,24 +926,28 @@ export default function App() {
                         {t.tabHint}
                       </p>
                     )}
-                    {job?.status === "failed" && (
+                    {(job?.status === "failed" || retrievalError) && (
                       <div className="failure-panel" role="alert">
                         <WarningCircle size={36} />
-                        <h2>{t.failed}</h2>
+                        <h2>{retrievalError ? t.retrievalFailed : t.failed}</h2>
                         <p>
-                          {typeof job.error === "string"
-                            ? job.error
-                            : job.error?.message || t.networkError}
+                          {retrievalError ||
+                            (typeof job?.error === "string"
+                              ? job.error
+                              : job?.error?.message || t.networkError)}
                         </p>
                         <button
                           className="button secondary"
                           onClick={() => {
-                            setJob(null);
-                            setToken("");
-                            setError("");
+                            if (retrievalError) setRetrievalError("");
+                            else {
+                              setJob(null);
+                              setToken("");
+                              setError("");
+                            }
                           }}
                         >
-                          {t.retry}
+                          {retrievalError ? t.retryStatus : t.retry}
                         </button>
                       </div>
                     )}

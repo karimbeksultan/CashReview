@@ -92,13 +92,15 @@ export const copy = {
     frame: "Frame",
     of: "of",
     failed: "Analysis could not complete",
+    retrievalFailed: "Result temporarily unavailable",
+    retryStatus: "Retrieve result again",
     retry: "Try again",
     formatError: "Choose a MOV video (.mov).",
     sizeError: "This file exceeds the 64 MiB limit.",
     networkError:
       "The service could not be reached. Check the connection and try again.",
     retrievalError:
-      "The result could not be retrieved within the review deadline. Start a new review or check the service.",
+      "The result could not be retrieved. Your review access is retained; reconnect and retrieve it again.",
     invalidResult:
       "The service returned an incomplete or inconsistent result. No verdict can be shown. Start a new review or check the service.",
     modelType: "Detected type",
@@ -252,13 +254,15 @@ export const copy = {
     frame: "Кадр",
     of: "из",
     failed: "Не удалось завершить анализ",
+    retrievalFailed: "Результат временно недоступен",
+    retryStatus: "Получить результат ещё раз",
     retry: "Повторить",
     formatError: "Выберите MOV-видео (.mov).",
     sizeError: "Файл превышает лимит 64 МиБ.",
     networkError:
       "Не удалось связаться с сервисом. Проверьте подключение и повторите.",
     retrievalError:
-      "Результат не получен в установленный срок. Начните новую проверку или проверьте сервис.",
+      "Не удалось получить результат. Доступ к проверке сохранён; восстановите соединение и повторите получение.",
     invalidResult:
       "Сервис вернул неполный или противоречивый результат. Вывод не отображается. Начните новую проверку или проверьте сервис.",
     modelType: "Тип события",
