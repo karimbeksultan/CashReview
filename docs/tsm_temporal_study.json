@@ -1,0 +1,225 @@
+{
+  "study": "TSM SSv2 six-recipe sparse-supervised temporal transfer study",
+  "publication_status": "aggregate_development_report",
+  "outcome_available": true,
+  "training_groups": 24,
+  "positive_training_groups": 13,
+  "normal_training_groups": 11,
+  "folds": 4,
+  "declared_configurations": 6,
+  "selection_groups_evaluated": 0,
+  "test_groups_evaluated": 0,
+  "quality_validated": false,
+  "serving_changed": false,
+  "promotion_authorized": false,
+  "scope": "Training-only exploratory OOF recipe/threshold selection; not independent accuracy",
+  "private_source_or_prediction_records_included": false,
+  "status": "rejected_train_gate",
+  "selected_index": 4,
+  "selected": {
+    "configuration": {
+      "representation": "unit_embeddings",
+      "C": 0.1
+    },
+    "oof_roc_auc": 0.4335664335664336,
+    "oof_standardized_partial_auc_fpr25": 0.46853146853146854,
+    "threshold": null,
+    "operating_point": null,
+    "training_gate_passed": false
+  },
+  "candidates": [
+    {
+      "configuration": {
+        "representation": "action_logits",
+        "C": 0.01
+      },
+      "oof_roc_auc": 0.4195804195804196,
+      "oof_standardized_partial_auc_fpr25": 0.4285714285714286,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "action_logits",
+        "C": 0.1
+      },
+      "oof_roc_auc": 0.4195804195804196,
+      "oof_standardized_partial_auc_fpr25": 0.4405594405594406,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "action_logits",
+        "C": 1.0
+      },
+      "oof_roc_auc": 0.4475524475524476,
+      "oof_standardized_partial_auc_fpr25": 0.45654345654345657,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "unit_embeddings",
+        "C": 0.01
+      },
+      "oof_roc_auc": 0.46153846153846156,
+      "oof_standardized_partial_auc_fpr25": 0.45254745254745254,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "unit_embeddings",
+        "C": 0.1
+      },
+      "oof_roc_auc": 0.4335664335664336,
+      "oof_standardized_partial_auc_fpr25": 0.46853146853146854,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    },
+    {
+      "configuration": {
+        "representation": "unit_embeddings",
+        "C": 1.0
+      },
+      "oof_roc_auc": 0.42657342657342656,
+      "oof_standardized_partial_auc_fpr25": 0.45254745254745254,
+      "threshold": null,
+      "operating_point": null,
+      "training_gate_passed": false
+    }
+  ],
+  "training_gate_passed": false,
+  "private_training_refit_completed": false,
+  "candidate_gate_pass_count": 0,
+  "method": "Official eight-segment TSM ResNet50 SSv2 encoder. Two fixed full-width upper/lower 60% portrait tiles, each RGB 224-square with ImageNet normalization. Top/bottom raw 174-class logits concatenate to 348 features; independently unit-normalized 2048-D vectors concatenate to 4096. Each representation uses C=.01/.1/1. New weighted StandardScaler and logistic regression fit within each unique-content fold; whole-clip score is the linear 90th percentile of all context probabilities.",
+  "fitting_scope": "Normal fitting groups supply all contexts as negatives. Positive fitting groups supply only logical contexts containing sparse annotations; unannotated positive contexts remain unknown. Class and clip sample weights are used once in both scaler and classifier. Held-out scoring uses all contexts without annotations.",
+  "training_gate_rule": "Rank training OOF standardized partial AUC at FPR<=.25, then full ROC-AUC, then declared order. The selected candidate must have ROC-AUC>.6, partial AUC>.5 and an OOF threshold with specificity>=.8, recall>=.5, balanced accuracy>=.65.",
+  "score_kind": "uncalibrated_q90_logistic_window_score",
+  "generic_source_digests": {
+    "extractor_policy_sha256": "c7cd01b5b8b0bf984f0991d0a44ace9f8427fb86f1a8f95ff2aeaf930fe443b4",
+    "learner_policy_sha256": "d829b3d27830abb8d83f915fa3cf7c26968adb50a855784832c013bdd0c0830d",
+    "extractor_code_sha256": "4246f7f217659a66a73525a3425e0eb42259648282ca625bfeebc0a888d88663",
+    "learner_code_sha256": "08bf2717321020ab091e9de51d647f8bce0cf67053d139e0ff555ea6c7d58cd8",
+    "process_guard_code_sha256": "1fdfc3c0017b8148d171d28521101ebc648c7d646aee03ddfb3cf15c612869c9"
+  },
+  "public_model_provenance": {
+    "repository": "mit-han-lab/temporal-shift-module",
+    "source_revision": "1f6a834b02120441d99fa706b7a13ccc5293c6fa",
+    "code_license": "MIT",
+    "weight_license_status": "unconfirmed-separate-terms",
+    "weight_redistribution_authorized": false,
+    "promotion_authorized": false,
+    "integrity_scope": "Actual locally computed download SHA256 and byte count from official HTTPS; no author-published weight digest was found",
+    "files": {
+      "TSM_somethingv2_RGB_resnet50_shift8_blockres_avg_segment8_e45.pth": {
+        "url": "https://hanlab18.mit.edu/projects/tsm/models/TSM_somethingv2_RGB_resnet50_shift8_blockres_avg_segment8_e45.pth",
+        "bytes": 95735374,
+        "sha256": "74bb90d6ecf5b03ed78ac6572d2ced7cd3d0f8dc7fdba0bd6ce11400a5908d38"
+      },
+      "README.md": {
+        "url": "https://raw.githubusercontent.com/mit-han-lab/temporal-shift-module/1f6a834b02120441d99fa706b7a13ccc5293c6fa/README.md",
+        "bytes": 19546,
+        "sha256": "5e263ef3175794cf3e7563fc5ac6c861d970c4a7d6493c01bc32c9f1965eb800"
+      },
+      "LICENSE": {
+        "url": "https://raw.githubusercontent.com/mit-han-lab/temporal-shift-module/1f6a834b02120441d99fa706b7a13ccc5293c6fa/LICENSE",
+        "bytes": 1068,
+        "sha256": "681e9ae4afcf6ab7a3ee5871871f634cf6bd291bf521971c9dbb5d2110755d6c"
+      },
+      "ops/temporal_shift.py": {
+        "url": "https://raw.githubusercontent.com/mit-han-lab/temporal-shift-module/1f6a834b02120441d99fa706b7a13ccc5293c6fa/ops/temporal_shift.py",
+        "bytes": 7405,
+        "sha256": "90dfd7f97e82e31dd9f4044960061ecaadfca3ba939c6e49ee6d326c8cc718ea"
+      },
+      "ops/models.py": {
+        "url": "https://raw.githubusercontent.com/mit-han-lab/temporal-shift-module/1f6a834b02120441d99fa706b7a13ccc5293c6fa/ops/models.py",
+        "bytes": 17751,
+        "sha256": "ed2637f88024f29df3fda87fc8f7f2877877ccf5da86dd1465f310fd72207446"
+      }
+    }
+  },
+  "public_provenance_record_sha256": "a80e8a5d2a6cfc8f944386a798c18a3e4c5e9f1da448ab2fde367533e83ad9a8",
+  "pre_source_sampling_amendment": {
+    "version": 2,
+    "source_inputs_processed_when_amended": 0,
+    "initial_dense_context_limit": 73,
+    "initial_dense_synthetic_hardware_qualified": false,
+    "final_context_limit": 37,
+    "final_batch": 16,
+    "context_start_step_sec": 4,
+    "frames_per_context": 8,
+    "target_frame_interval_sec": 0.5,
+    "description": "Initial dense 73-context synthetic hardware qualification failed. Before any source processing, v2 fixed non-overlapping four-second contexts with starts 0,4,... and at most 37 contexts. Eight targets are sampled at 2 FPS; short tails repeat the last authentic frame and its actual PTS.",
+    "scope": "Synthetic local hardware choice before case inference; no quality or host/service latency qualification"
+  },
+  "extraction": {
+    "training_source_groups_completed": 24,
+    "failed": 0,
+    "total_contexts": 192,
+    "child_elapsed_sec": {
+      "min": 15.203000000008615,
+      "median": 27.281499999997322,
+      "max": 143.26499999998487,
+      "sum": 859.5940000000119
+    },
+    "batch_wall_sec": 903.9690000000119,
+    "scope": "Observed local feature extraction only; not cold full-engine, HTTP, queue, or target-host service qualification",
+    "unique_or_authentic_source_frame_count": null,
+    "frame_count_limit": "The final aggregate does not establish unique/authentic frame or padding totals; no such totals are inferred."
+  },
+  "technical_checks": {
+    "extractor_contracts": 25,
+    "learner_contracts": 39,
+    "hardware_arithmetic_checks": 12,
+    "scope": "Technical checks only, separate from application tests and task accuracy"
+  },
+  "limitations": [
+    "The same 24 development groups support exploratory training OOF comparisons. Neither selection8 nor test8 was processed by this study; the historical test was already exposed by the baseline.",
+    "Sparse annotation eligibility is weak supervision; it does not establish complete intervals, action types, event localization, authorization, intent, identity, or legal obligations.",
+    "2 FPS sampling may miss brief actions, padded contexts repeat observations, and q90 may miss a single brief event in a long clip.",
+    "Passing a training gate, if observed, would not establish independent generalization or permit promotion.",
+    "Checkpoint terms remain unconfirmed. This is private local research; weights are not redistributed and no serving promotion is authorized.",
+    "The receiving party will run the package on its own infrastructure. Docker, target hardware/runtime, offline execution and the full HTTP/queue/cold-start path there remain unqualified. Local feature extraction timing does not qualify that host."
+  ],
+  "method_references": [
+    {
+      "title": "Official TSM repository, pinned source",
+      "url": "https://github.com/mit-han-lab/temporal-shift-module/tree/1f6a834b02120441d99fa706b7a13ccc5293c6fa",
+      "context": "Official eight-frame Something-SomethingV2 checkpoint and temporal-shift architecture; task-specific quality is not established by action pretraining."
+    },
+    {
+      "title": "TSM: Temporal Shift Module for Efficient Video Understanding",
+      "url": "https://arxiv.org/abs/1811.08383",
+      "context": "Primary temporal-shift method. This local CPU transfer study is not a reproduction of its action-recognition benchmark."
+    },
+    {
+      "title": "Pinned official code licence",
+      "url": "https://github.com/mit-han-lab/temporal-shift-module/blob/1f6a834b02120441d99fa706b7a13ccc5293c6fa/LICENSE",
+      "context": "MIT code licence. A distinct grant for the hosted checkpoint has not been confirmed; code licensing is not asserted as weight licensing."
+    },
+    {
+      "title": "Scikit-learn: grouped cross-validation",
+      "url": "https://scikit-learn.org/stable/modules/cross_validation.html",
+      "context": "Keep unique-content groups separate and fit preprocessing within each training fold."
+    },
+    {
+      "title": "Scikit-learn: threshold selection",
+      "url": "https://scikit-learn.org/stable/modules/classification_threshold.html",
+      "context": "Select an operating point from training OOF scores; no evaluation-outcome threshold tuning."
+    },
+    {
+      "title": "Scientific Agent Skills: A Library of Procedural Knowledge for Research Agents",
+      "url": "https://doi.org/10.48550/arXiv.2609.00065",
+      "authors": "Timothy Kassis, Vinayak Agarwal, Yuhuan He, Darshil Patel, Aubrey M. Brueckner",
+      "year": 2026,
+      "context": "Supplementary scikit-learn workflow guidance; arXiv v2 checked 17 October 2026."
+    }
+  ]
+}

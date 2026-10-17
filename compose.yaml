@@ -7,6 +7,7 @@ services:
       CASH_REVIEW_API_KEY: ${CASH_REVIEW_API_KEY:?Set a private integration API key in .env}
       CASH_REVIEW_MODEL_DIR: /models
       CASH_REVIEW_DATA_DIR: /data
+      CASH_REVIEW_ALLOWED_ORIGINS: ${CASH_REVIEW_ALLOWED_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173}
       CASH_REVIEW_WORKERS: 1
       CASH_REVIEW_QUEUE_CAPACITY: 8
     volumes:

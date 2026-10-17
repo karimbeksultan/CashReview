@@ -30,6 +30,12 @@ Use encrypted, access-controlled host storage. On Windows, filesystem access fol
 
 Build the frontend before starting the backend. Check liveness separately from readiness: a live process can still lack valid model artifacts. Exercise authorized uploads, invalid keys, per-job isolation, corrupt input, review persistence, restart recovery and retention on the target host.
 
+The intended competition run is on the organizers' infrastructure. This repository and its source archive contain application source and aggregate reports; they contain no prepared detector weights, source recordings, labels or credentials. Arrange a permitted private model directory separately and record its hashes/version. The current failed baseline is suitable only for demonstrating the experimental workflow; no qualified replacement has been established. Do not substitute an unqualified research checkpoint into the serving engine.
+
+For the provided Compose option, prepare `./models`, set a new `CASH_REVIEW_API_KEY` in the host's private `.env`, and run `docker compose up --build -d` from the repository root. Set `CASH_REVIEW_ALLOWED_ORIGINS` to include the exact HTTPS browser origin used by the organizers' ingress; Compose forwards it to the container. The model mount is read-only and runtime state uses the `review-runtime` volume. The port is bound to host loopback; remote access requires the organizers' ingress configuration. Image construction may download dependencies, so prepare the image before the disconnected check. Docker execution and target-host performance have not been verified here.
+
+Record the organizers' CPU/GPU, memory, operating system, model hashes and cold/warm upload-to-result times. Local neural extraction timings are research measurements on this laptop and cannot establish service latency on that host. The binary API contract remains stable; the browser requires human review unless the job itself records both quality qualification fields.
+
 Before exposing the service, verify TLS, direct backend routing, body/time limits, five-client throughput, longest permitted clips and access from another network. Prepare dependencies and weights before testing with network access disabled. Docker packaging is provided; its target-host execution must be checked independently of local Python tests.
 
 ## Recovery

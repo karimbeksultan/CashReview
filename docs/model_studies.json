@@ -347,6 +347,23 @@
       "promoted": false,
       "quality_validated": false,
       "detail": "dino_transition_mil_study.json"
+    },
+    {
+      "name": "TSM SSv2 six-recipe sparse-supervised temporal transfer study",
+      "training_groups": 24,
+      "declared_configurations": 6,
+      "training_oof_roc_auc": 0.4335664335664336,
+      "training_oof_standardized_partial_auc_fpr025": 0.46853146853146854,
+      "selected_representation": "unit_embeddings",
+      "selected_C": 0.1,
+      "training_gate_passed": false,
+      "eligible_operating_point_found": false,
+      "development_groups_evaluated": 0,
+      "new_test_evaluated": 0,
+      "promoted": false,
+      "quality_validated": false,
+      "detail": "tsm_temporal_study.json",
+      "weight_license_status": "unconfirmed-research-only"
     }
   ],
   "remaining_evidence": [
@@ -356,8 +373,8 @@
   ],
   "quality_validated": false,
   "latest_training_only_followup": {
-    "declared_variants": 27,
-    "executed_variants": 27,
+    "declared_variants": 33,
+    "executed_variants": 33,
     "independent_benchmarks": false,
     "all_training_gates_failed": true,
     "additional_test_groups_evaluated": 0

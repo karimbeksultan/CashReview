@@ -4,7 +4,7 @@ Local video analysis with large, timestamped evidence and a clear human-review w
 
 Upload a video, inspect candidate moments in the original recording, and record a human decision with notes. The model result stays separate from the reviewer’s assessment. Cash Review does not identify people or establish legal wrongdoing.
 
-**Detection status:** the active V1 baseline failed to distinguish normal clips in its original eight-clip test. Stronger local candidates, including SigLIP2 fine-tuning, Qwen3-VL, DINOv2 normal-memory models and learned local/transition MIL heads, also failed their frozen quality gates. Reliable automatic detection has not been established. The interface and API support experimental analysis and independent human review. See the [measured model studies](docs/model_studies.md).
+**Detection status:** the active V1 baseline failed to distinguish normal clips in its original eight-clip test. Stronger local candidates, including SigLIP2 fine-tuning, Qwen3-VL, DINOv2 normal-memory models, learned local/transition MIL heads and TSM SSv2 action-transfer models, also failed their frozen quality gates. Reliable automatic detection has not been established. The interface and API support experimental analysis and independent human review. See the [measured model studies](docs/model_studies.md).
 
 ![Review workspace](docs/interface-preview.jpg)
 

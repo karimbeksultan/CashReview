@@ -30,6 +30,8 @@ Header dimensions are checked before the first explicit decode; actual dimension
 
 Events have type `visual_review_signal` and context rule `CR-001`. Their description explicitly states that the concrete action and regulatory violation are unestablished. Classifier scores are uncalibrated and should not be shown as a percentage likelihood of wrongdoing. A negative result means no baseline signal crossed its threshold; it does not certify compliance. One-second sampling and three-candidate limits can miss events. Source timestamps are not complete event truth, so the evaluation does not claim event precision/recall or typed event accuracy.
 
+The browser abstains from a binary assessment unless the completed job's own metadata contains both `quality_validated: true` and `validation_status: "validated"`. The current baseline therefore displays **Human review required** for either raw verdict. Candidate moments, scores and the immutable API result remain available. This reduces misleading presentation; it does not reduce the classifier's measured false-positive rate.
+
 Reviewers can save an independent human decision and notes for a completed job. These records never change the model result, provide a source-label lookup, or automatically enter training. The source-label comparison has been removed from the runtime.
 
 ## Reproduction
