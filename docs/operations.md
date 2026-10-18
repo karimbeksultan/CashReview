@@ -1,5 +1,27 @@
 # Operating Cash Review
 
+## VPS service
+
+The workspace is deployed at **https://2-27-131-250.sslip.io/** on a separate Ubuntu 24.04 VPS. The API base URL is the same origin without a trailing path; integration routes retain `/api/v1/`. The integration key is stored privately on the host and is not included in this repository.
+
+`cash-review.service` runs one Uvicorn process as the dedicated `cashreview` user, binds only to `127.0.0.1:8001`, and restarts after failure. Caddy terminates public HTTPS, renews the certificate and proxies to that loopback service. Both services are enabled at boot. The address uses third-party wildcard DNS and remains dependent on that DNS provider and the VPS retaining its IP; it is independent of the laptop and the earlier temporary tunnel.
+
+Application and prepared weights live in `/opt/cash-review`; private runtime data lives in `/var/lib/cash-review`. The root-readable `/opt/cash-review/app.env` supplies the key, exact HTTPS browser origin, private paths, one analysis worker, queue capacity three and single-threaded native processing. No source recordings, labels or old runtime data were transferred. The model remains the unchanged, unqualified V1 baseline.
+
+The VPS CPU lacks the X86_V2 baseline required by NumPy 2.5.4. This deployment uses **NumPy 2.2.6 and OpenCV headless 4.10.0.84** with Python 3.12. Do not replace these with latest versions without checking CPU compatibility. Readiness verifies the original artifact hashes; a ready service does not establish detector quality or real-video performance.
+
+On 18 October, public TLS verification passed: workspace and API docs `200`, missing integration key `401`, valid key for an unknown job `404`, authenticated empty upload `422`, same-origin empty browser request `422`, and foreign-origin browser request `403`. No footage was uploaded during deployment checks. Full video latency and concurrency on this roughly 1 GB VPS remain unverified. Existing bot services stayed active.
+
+Operational commands on the VPS:
+
+```sh
+systemctl status cash-review caddy --no-pager
+journalctl -u cash-review -n 50 --no-pager
+curl --fail https://2-27-131-250.sslip.io/api/health/ready
+```
+
+After changing application files or private configuration, restart only `cash-review`. Validate Caddy configuration before reloading it. Keep secrets and weights out of source-control archives.
+
 ## Data path
 
 The browser sends a MOV directly to FastAPI. Bounded admission writes it to private local storage and creates a durable SQLite job. The scheduler claims work with a unique token and expiring lease. A separate child process decodes, scores temporal evidence, and validates JPEGs. Only the current unexpired claim can publish a complete result.

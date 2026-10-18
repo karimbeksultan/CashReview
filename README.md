@@ -26,8 +26,10 @@
 | **Inspect the recording** | Large player, precise time navigation and keyboard controls. |
 | **Examine candidate moments** | Source-frame JPEGs, fractional-second timestamps, full-size viewing and zoom. |
 | **Record a human decision** | Confirm concern, no concern or further review, with persistent notes and event scope. |
+| **Keep a review report** | Download candidate timestamps and the last saved human assessment as a local text file. Unsaved notes, images and access tokens are excluded. |
 
 - English and Russian interface with locally bundled fonts.
+- Confirmation before replacing an active review, plus a browser warning before leaving a job or unsaved assessment.
 - Local CPU inference from prepared files, private uploads and no cloud AI calls.
 - Durable SQLite jobs, scoped access and isolated analysis with a five-minute deadline.
 - Keyed integration API, reproducible evaluation and optional Docker packaging.
@@ -38,7 +40,7 @@ The model result and human assessment remain separate. An unqualified result dis
 
 | Area | Evidence |
 | --- | --- |
-| Application software | **62 tests passed:** 52 backend and 10 frontend. [Verification](docs/verification.md) |
+| Application software | **70 tests passed:** 52 backend and 18 frontend; frontend checks rerun on 18 October. [Verification](docs/verification.md) |
 | Automatic detection | **Not qualified.** All 33 latest training variants failed their frozen gates. [Studies](docs/model_studies.md) |
 | Data | 42 supplied videos, 40 unique content groups; fixed 24/8/8 train/selection/original-test split. [Model card](docs/model_card.md) |
 | Organizers' environment | Docker execution, hardware and full service performance remain unverified. [Handoff notes](docs/operations.md#deployment-verification) |

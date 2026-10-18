@@ -12,6 +12,7 @@ import {
   CloudArrowUp,
   Code,
   Cpu,
+  DownloadSimple,
   Eye,
   FileVideo,
   Globe,
@@ -28,6 +29,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { copy } from "./copy";
+import { buildReviewReport } from "./report";
 import {
   automaticDecision,
   InvalidResultError,
@@ -180,6 +182,19 @@ export default function App() {
   const runtimeExperimental = runtime?.validation_status !== "validated";
   const runtimeFailedBaseline =
     runtime?.validation_status === "failed_baseline";
+  const unsavedReview =
+    !reviewDraft.saved && Boolean(reviewDraft.decision || reviewDraft.notes);
+  const protectReview =
+    busy || reviewSaving || Boolean(job && token) || unsavedReview;
+  useEffect(() => {
+    if (!protectReview) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [protectReview]);
   const refreshHealth = useCallback(async () => {
     setChecking(true);
     try {
@@ -383,6 +398,7 @@ export default function App() {
     return () => window.removeEventListener("keydown", key);
   }, [page, file, demo, frameSelection, current, play, seek]);
   function reset() {
+    if (protectReview && !window.confirm(t.leaveReviewConfirm)) return false;
     generation.current++;
     activeRequest.current?.abort();
     setDemo(false);
@@ -404,6 +420,7 @@ export default function App() {
     setReviewSaving(false);
     setPage("review");
     if (input.current) input.current.value = "";
+    return true;
   }
   function choose(value?: File) {
     if (!value) return;
@@ -415,8 +432,38 @@ export default function App() {
       setError(t.sizeError.replace("64", uploadLimitLabel));
       return;
     }
-    reset();
+    if (!reset()) {
+      if (input.current) input.current.value = "";
+      return;
+    }
     setFile(value);
+  }
+  function downloadReport() {
+    if (!isResult || reviewSaving) return;
+    let report: string;
+    try {
+      report = buildReviewReport({
+        lang,
+        job,
+        fileName: file?.name,
+        demo,
+        demoFindings: findings,
+        demoReview,
+      });
+    } catch {
+      setError(t.reportError);
+      return;
+    }
+    const url = URL.createObjectURL(
+      new Blob(["\ufeff", report], { type: "text/plain;charset=utf-8" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${demo ? "cash-review-illustrated" : "cash-review"}-report-${new Date().toISOString().slice(0, 19).replaceAll(":", "-")}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function analyze() {
     if (!file || busy) return;
@@ -634,10 +681,26 @@ export default function App() {
                 </p>
               </div>
               {(file || demo || job) && (
-                <button className="button secondary" onClick={reset}>
-                  <Plus size={20} />
-                  {t.new}
-                </button>
+                <div className="heading-actions">
+                  {isResult && (
+                    <button
+                      className="button secondary"
+                      onClick={downloadReport}
+                      disabled={reviewSaving}
+                      title={t.reportHint}
+                    >
+                      <DownloadSimple size={20} aria-hidden="true" />
+                      {t.downloadReport}
+                    </button>
+                  )}
+                  <button className="button secondary" onClick={reset}>
+                    <Plus size={20} />
+                    {t.new}
+                  </button>
+                  {isResult && unsavedReview && (
+                    <span className="report-draft-note">{t.reportUnsaved}</span>
+                  )}
+                </div>
               )}
             </div>
             {failedBaseline && (
@@ -734,7 +797,7 @@ export default function App() {
                     <button
                       className="preview-button"
                       onClick={() => {
-                        reset();
+                        if (!reset()) return;
                         setDemo(true);
                         setCurrent(34);
                       }}

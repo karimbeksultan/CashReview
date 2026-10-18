@@ -255,6 +255,20 @@ input[type="range"] {
   font-size: 14px;
   overflow-wrap: anywhere;
 }
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.report-draft-note {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+  max-width: 380px;
+}
 .button {
   min-height: 46px;
   padding: 11px 18px;
@@ -2199,6 +2213,16 @@ input[type="range"] {
   }
   .result-heading p {
     font-size: 13px;
+  }
+  .result-heading {
+    flex-wrap: wrap;
+  }
+  .result-heading .heading-actions {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+  .report-draft-note {
+    text-align: left;
   }
   .quiet-label {
     margin-bottom: 15px;

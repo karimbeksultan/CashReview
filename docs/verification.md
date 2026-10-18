@@ -2,6 +2,8 @@
 
 Checked locally on 17 October 2026. These checks cover application behavior, not detector accuracy.
 
+Frontend update checked on 18 October: all 18 contract tests passed, including eight report tests; strict TypeScript and a separate Vite production build passed. Reports preserve the job's qualification guard, distinguish synthetic examples, include only saved human receipts, and omit images, access tokens, job IDs and arbitrary metadata. Reset confirmation and an unload warning protect active jobs and unsaved assessments. These interface changes do not improve measured model accuracy. Backend results below remain the prior 52-test run.
+
 | Check | Observed result |
 | --- | --- |
 | Backend regression suite | 52 passed in 22.02 seconds. Includes keyed/scoped access, persistent human review, immutable model results, malformed inputs, bounded evidence, worker fencing, process deadlines, strict relative timestamps, versioned feature-cache integrity and immutable historical training/evaluation artifacts. One dependency deprecation warning from the test client. |

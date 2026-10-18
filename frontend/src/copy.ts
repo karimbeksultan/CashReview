@@ -29,6 +29,13 @@ export const copy = {
     private: "Processed privately on this service",
     analyze: "Analyze video",
     new: "New review",
+    downloadReport: "Download report",
+    reportHint:
+      "Download a text summary with candidate timestamps and the saved human assessment. No video or images are included.",
+    reportUnsaved: "Unsaved changes are not included in the report.",
+    reportError: "The report could not be generated. Your review is still available in this tab.",
+    leaveReviewConfirm:
+      "Leave this review? Unsaved notes and this tab's access to the current job will be lost. Cancel to stay and save or download your review first.",
     preview: "Explore a sample review",
     previewHint: "An illustrated preview, with no real footage.",
     previewMode: "Illustrated preview",
@@ -198,6 +205,13 @@ export const copy = {
     private: "Приватная обработка в этом сервисе",
     analyze: "Анализировать",
     new: "Новая проверка",
+    downloadReport: "Скачать отчёт",
+    reportHint:
+      "Текстовая сводка с таймкодами и сохранённой оценкой человека. Без видео и изображений.",
+    reportUnsaved: "Несохранённые изменения не войдут в отчёт.",
+    reportError: "Не удалось сформировать отчёт. Проверка остаётся доступной в этой вкладке.",
+    leaveReviewConfirm:
+      "Завершить эту проверку? Несохранённые заметки и доступ этой вкладки к текущему заданию будут потеряны. Отмена позволит сначала сохранить решение или скачать отчёт.",
     preview: "Посмотреть пример проверки",
     previewHint: "Иллюстративный пример без реального видео.",
     previewMode: "Иллюстративный пример",
